@@ -70,7 +70,9 @@ export default function MovieDetailsPage() {
     )
       .then(setCurrentShowtimes)
       .catch((err) => console.error("Error fetching showtimes by date:", err));
-  }, [selectedDateIndex, availableDates, id]);
+  // availableDates.length thay vì cả array để tránh re-run khi reference thay đổi nhưng data giống nhau
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDateIndex, availableDates.length, id]);
 
   const handleWatchTrailer = () => {
     if (trailerRef.current) {
@@ -84,7 +86,27 @@ export default function MovieDetailsPage() {
     }
   };
 
-  if (!movie) return <div className="text-center pt-20">Loading...</div>;
+  if (!movie) {
+    return (
+      <div className="min-h-screen">
+        <div className="w-full h-[500px] lg:h-[600px] bg-muted animate-pulse" />
+        <div className="px-4 sm:px-6 lg:px-8 py-8 max-w-[1920px] mx-auto flex gap-6">
+          <div className="hidden sm:block w-48 sm:w-56 lg:w-72 flex-none">
+            <div className="aspect-[2/3] bg-muted animate-pulse rounded-xl" />
+          </div>
+          <div className="flex-1 space-y-4">
+            <div className="h-10 w-2/3 bg-muted animate-pulse rounded-xl" />
+            <div className="h-5 w-1/3 bg-muted animate-pulse rounded-xl" />
+            <div className="h-24 w-full bg-muted animate-pulse rounded-xl" />
+            <div className="flex gap-3">
+              <div className="h-10 w-32 bg-muted animate-pulse rounded-xl" />
+              <div className="h-10 w-24 bg-muted animate-pulse rounded-xl" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
@@ -96,10 +118,10 @@ export default function MovieDetailsPage() {
             className="w-full h-full object-cover object-[center_20%]"
             alt={movie.title}
           />
-          <div className="absolute inset-0 bg-black/50" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-transparent to-black/80" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black" />
+          <div className="absolute inset-0 bg-black/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/60" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60" />
         </div>
 
         <div className="relative z-10 px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 max-w-[1920px] mx-auto">
@@ -158,12 +180,12 @@ export default function MovieDetailsPage() {
 
               <div className="flex flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-6">
                 <button
-                  className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors"
+                  className="flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base bg-primary hover:bg-primary/90 hover:-translate-y-0.5 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg shadow-primary/30"
                   onClick={handleWatchTrailer}
                 >
-                  <Play className="w-4 h-4 sm:w-5 sm:h-5" /> Xem trailer
+                  <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current" /> Xem trailer
                 </button>
-                <button className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base bg-white hover:bg-gray-100 text-black rounded-lg font-semibold transition-colors">
+                <button className="flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base bg-white/15 hover:bg-white/25 hover:-translate-y-0.5 text-white rounded-xl font-semibold transition-all duration-200 border border-white/30 backdrop-blur-sm">
                   <Share2 className="w-4 h-4 sm:w-5 sm:h-5" /> Share
                 </button>
               </div>
@@ -223,7 +245,7 @@ export default function MovieDetailsPage() {
       <div ref={trailerRef} className="px-4 sm:px-6 lg:px-8 py-12 max-w-[1920px] mx-auto">
         <div className="max-w-5xl mx-auto">
           <h2 className="mb-6 text-2xl font-bold">Trailer</h2>
-          <div className="aspect-video bg-black rounded-lg overflow-hidden shadow-xl">
+          <div className="aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl">
             <iframe
               src={trailerUrl}
               width="100%"

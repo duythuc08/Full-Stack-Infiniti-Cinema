@@ -70,7 +70,7 @@ Dự án đã được refactor sang Next.js App Router thành công. Các luồ
 4. Tiêu chuẩn Code & TypeScript:
 - Code phải viết bằng TypeScript (.tsx/.ts) với strict typing. Không sử dụng `any`.
 - Code trả về phải hoàn chỉnh 100%, có thể chạy ngay. Không dùng comment lấp lửng như `// ... existing code here`.
-
+5. "Tuyệt đối không được lược bỏ các trường dữ liệu (fields) từ API trả về, dù là trong quá trình nâng cấp giao diện".
 # QUY TRÌNH LÀM VIỆC (SYSTEM DIRECTIVE):
 Khi tôi yêu cầu thêm tính năng mới, fix bug hoặc tối ưu, bạn hãy:
 1. Phân tích yêu cầu và tự động quét các file liên quan trong workspace.

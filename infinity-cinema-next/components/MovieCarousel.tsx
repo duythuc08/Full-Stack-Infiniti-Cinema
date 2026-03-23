@@ -39,23 +39,31 @@ export function MovieCarousel({ title, movies }: MovieCarouselProps) {
   };
 
   return (
-    <div className="mb-8 sm:mb-12 group/carousel">
-      <h2 className="mb-4 px-4 sm:px-6 lg:px-8">{title}</h2>
+    <div className="mb-10 sm:mb-14 group/carousel">
+      {/* Section title with gradient text */}
+      <div className="px-4 sm:px-6 lg:px-8 mb-5 flex items-center gap-3">
+        <div className="w-1 h-6 bg-primary rounded-full" />
+        <h2 className="text-xl sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-foreground to-foreground/60">
+          {title}
+        </h2>
+      </div>
 
       <div className="relative">
         {showLeftArrow && (
           <button
             onClick={() => scroll("left")}
-            className="cursor-pointer absolute left-0 top-0 bottom-0 z-10 w-12 bg-black/50 opacity-0 group-hover/carousel:opacity-100 transition-opacity flex items-center justify-center hover:bg-black/70"
+            className="cursor-pointer absolute left-0 top-0 bottom-0 z-10 w-14 bg-gradient-to-r from-black/70 to-transparent opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-200 flex items-center justify-center"
           >
-            <ChevronLeft className="w-8 h-8" />
+            <div className="w-9 h-9 rounded-full bg-black/60 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-black/80 transition-colors shadow-lg">
+              <ChevronLeft className="w-5 h-5 text-white" />
+            </div>
           </button>
         )}
 
         <div
           ref={scrollContainerRef}
           onScroll={checkArrows}
-          className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide px-4 sm:px-6 lg:px-8 scroll-smooth"
+          className="flex gap-2.5 sm:gap-3 overflow-x-auto scrollbar-hide px-4 sm:px-6 lg:px-8 scroll-smooth pb-2"
         >
           {movies.map((movie, index) => (
             <div key={movie.id || index} className="flex-none w-36 sm:w-44 md:w-52">
@@ -67,9 +75,11 @@ export function MovieCarousel({ title, movies }: MovieCarouselProps) {
         {showRightArrow && (
           <button
             onClick={() => scroll("right")}
-            className="cursor-pointer absolute right-0 top-0 bottom-0 z-10 w-12 bg-black/50 opacity-0 group-hover/carousel:opacity-100 transition-opacity flex items-center justify-center hover:bg-black/70"
+            className="cursor-pointer absolute right-0 top-0 bottom-0 z-10 w-14 bg-gradient-to-l from-black/70 to-transparent opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-200 flex items-center justify-center"
           >
-            <ChevronRight className="w-8 h-8" />
+            <div className="w-9 h-9 rounded-full bg-black/60 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-black/80 transition-colors shadow-lg">
+              <ChevronRight className="w-5 h-5 text-white" />
+            </div>
           </button>
         )}
       </div>

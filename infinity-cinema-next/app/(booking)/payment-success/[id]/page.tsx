@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { CheckCircle, Download, Home, Ticket } from "lucide-react";
+import { CheckCircle2, Download, Home, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { fetchOrderById } from "@/libs/service/order.service";
 import type { OrderData, OrderExtraInfo } from "@/types/order.types";
 
@@ -37,7 +38,6 @@ export default function PaymentSuccessPage() {
             paymentMethod: parsed.paymentMethod,
           });
 
-          // If MOMO (no orderId from URL), use orderId from localStorage
           if (!orderIdFromUrl && parsed.orderId) {
             await loadOrderFromAPI(parsed.orderId);
             return;
@@ -107,10 +107,18 @@ export default function PaymentSuccessPage() {
 
   if (loading) {
     return (
-      <main className="w-full max-w-6xl mx-auto px-4 py-16 text-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
-          <p className="text-white text-xl">Đang tải thông tin đơn hàng...</p>
+      <main className="w-full max-w-6xl mx-auto px-4 py-16">
+        <div className="flex flex-col items-center gap-4 mb-12">
+          <Skeleton className="w-20 h-20 rounded-full" />
+          <Skeleton className="h-8 w-80 rounded-xl" />
+          <Skeleton className="h-5 w-64 rounded-xl" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <Skeleton className="h-80 rounded-2xl" />
+          <div className="lg:col-span-2 space-y-4">
+            <Skeleton className="h-48 rounded-2xl" />
+            <Skeleton className="h-56 rounded-2xl" />
+          </div>
         </div>
       </main>
     );
@@ -119,8 +127,8 @@ export default function PaymentSuccessPage() {
   if (error || !orderData) {
     return (
       <main className="w-full max-w-6xl mx-auto px-4 py-16 text-center">
-        <p className="text-red-500 text-xl mb-2">Lỗi!</p>
-        <p className="text-white text-lg mb-4">{error || "Không tìm thấy thông tin đơn hàng"}</p>
+        <p className="text-destructive text-xl mb-2 font-bold">Lỗi!</p>
+        <p className="text-muted-foreground text-base mb-6">{error || "Không tìm thấy thông tin đơn hàng"}</p>
         <Button onClick={() => router.push("/")} className="gap-2">
           <Home className="w-4 h-4" /> Về trang chủ
         </Button>
@@ -133,27 +141,31 @@ export default function PaymentSuccessPage() {
   return (
     <main className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16">
       <div className="flex flex-col gap-8">
-        {/* Header */}
+        {/* Success Header */}
         <div className="flex flex-col gap-3 text-center">
-          <div className="flex justify-center mb-4">
-            <CheckCircle className="w-20 h-20 text-green-500" />
+          <div className="flex justify-center mb-2">
+            <div className="w-20 h-20 rounded-full bg-emerald-500/15 border-2 border-emerald-500/30 flex items-center justify-center">
+              <CheckCircle2 className="w-12 h-12 text-emerald-500" />
+            </div>
           </div>
-          <p className="text-white text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em]">
-            Chúc mừng! Bạn đã đặt vé thành công.
-          </p>
-          <p className="text-muted-foreground text-base font-normal leading-normal">
-            Mã đơn hàng: <span className="font-bold text-yellow-400">#{orderData.orderId}</span> – Thông tin đã được gửi đến email của bạn.
+          <h1 className="text-foreground text-3xl md:text-4xl font-black leading-tight">
+            Đặt vé thành công!
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            Mã đơn hàng:{" "}
+            <span className="font-bold text-yellow-500">#{orderData.orderId}</span>
+            {" "}– Thông tin đã được gửi đến email của bạn.
           </p>
         </div>
 
         {/* Layout: QR + Details */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          {/* QR Code */}
-          <div className="lg:col-span-1 bg-[#141414] border border-white/10 p-6 rounded-lg flex flex-col items-center gap-6">
-            <div className="bg-white p-4 rounded-md">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          {/* QR Code card */}
+          <div className="lg:col-span-1 bg-card border border-border rounded-2xl p-6 flex flex-col items-center gap-5 shadow-xl shadow-black/10">
+            <div className="bg-white p-3 rounded-xl shadow-lg">
               <img
                 alt={`QR Code for order ${orderData.orderId}`}
-                className="w-full max-w-[220px] aspect-square"
+                className="w-full max-w-[200px] aspect-square"
                 src={
                   orderData.qrCode?.startsWith("data:image")
                     ? orderData.qrCode
@@ -162,120 +174,126 @@ export default function PaymentSuccessPage() {
               />
             </div>
             <div className="text-center">
-              <p className="text-white text-lg font-bold">Mã đặt vé: {orderData.qrCode || `#${orderData.orderId}`}</p>
-              <p className="text-muted-foreground text-sm mt-1">Vui lòng đưa mã QR này tại quầy vé để nhận vé của bạn.</p>
+              <p className="text-base font-bold">{orderData.qrCode || `#${orderData.orderId}`}</p>
+              <p className="text-muted-foreground text-xs mt-1 leading-relaxed">
+                Đưa mã QR này tại quầy vé để nhận vé.
+              </p>
             </div>
-            <Button className="w-full gap-2">
+            <Button className="w-full gap-2 hover:-translate-y-0.5 transition-all">
               <Download className="w-4 h-4" /> Tải vé về
             </Button>
           </div>
 
           {/* Ticket Details */}
-          <div className="lg:col-span-2 flex flex-col gap-8">
-            <div className="bg-[#141414] border border-white/10 rounded-lg p-6 flex flex-col gap-6">
-              <div className="flex items-start justify-between gap-6">
-                <div className="flex gap-4">
-                  {extraInfo?.moviePoster && (
-                    <img src={extraInfo.moviePoster} alt={extraInfo?.movie} className="w-20 h-28 object-cover rounded-md" />
-                  )}
-                  <div className="flex flex-col gap-1">
-                    <p className="text-muted-foreground text-sm">Chi tiết vé</p>
-                    <p className="text-white text-2xl font-bold">{extraInfo?.movie || "---"}</p>
-                    <p className="text-muted-foreground text-sm">{extraInfo?.format || "2D Phụ đề"}</p>
-                  </div>
+          <div className="lg:col-span-2 flex flex-col gap-5">
+            {/* Movie info card */}
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-lg shadow-black/5">
+              <div className="flex items-start gap-4 mb-5">
+                {extraInfo?.moviePoster && (
+                  <img
+                    src={extraInfo.moviePoster}
+                    alt={extraInfo?.movie}
+                    className="w-16 h-24 object-cover rounded-xl border border-border shadow-md flex-shrink-0"
+                  />
+                )}
+                <div>
+                  <p className="text-muted-foreground text-xs mb-1">Chi tiết vé</p>
+                  <p className="text-xl font-bold">{extraInfo?.movie || "---"}</p>
+                  <p className="text-muted-foreground text-sm mt-1">{extraInfo?.format || "2D Phụ đề"}</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-5 gap-x-6 border-t border-white/10 pt-5">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-4 gap-x-6 border-t border-border pt-5">
                 <div>
-                  <p className="text-muted-foreground text-sm">Rạp chiếu</p>
-                  <p className="text-white text-sm font-medium mt-1">{extraInfo?.cinema || "---"} - {extraInfo?.roomName || "---"}</p>
+                  <p className="text-muted-foreground text-xs mb-1">Rạp chiếu</p>
+                  <p className="text-sm font-semibold">{extraInfo?.cinema || "---"} – {extraInfo?.roomName || "---"}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-sm">Suất chiếu</p>
-                  <p className="text-white text-sm font-medium mt-1">{extraInfo?.date || "---"} - {extraInfo?.time || "---"}</p>
+                  <p className="text-muted-foreground text-xs mb-1">Suất chiếu</p>
+                  <p className="text-sm font-semibold">{extraInfo?.date || "---"} – {extraInfo?.time || "---"}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-sm">Ghế ngồi</p>
-                  <p className="text-white text-sm font-medium mt-1">{getSeatList()}</p>
+                  <p className="text-muted-foreground text-xs mb-1">Ghế ngồi</p>
+                  <p className="text-sm font-semibold">{getSeatList()}</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-5 gap-x-6 border-t border-white/10 pt-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 border-t border-border pt-4 mt-4">
                 <div>
-                  <p className="text-muted-foreground text-sm">Thời gian đặt</p>
-                  <p className="text-white text-sm font-medium mt-1">{formatDate(orderData.bookingTime)}</p>
+                  <p className="text-muted-foreground text-xs mb-1">Thời gian đặt</p>
+                  <p className="text-sm font-semibold">{formatDate(orderData.bookingTime)}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-sm">Khách hàng</p>
-                  <p className="text-white text-sm font-medium mt-1">{orderData.fullName || "---"}</p>
+                  <p className="text-muted-foreground text-xs mb-1">Khách hàng</p>
+                  <p className="text-sm font-semibold">{orderData.fullName || "---"}</p>
                 </div>
               </div>
             </div>
 
-            {/* Order Summary */}
-            <div className="bg-[#141414] border border-white/10 rounded-lg p-6 flex flex-col gap-4 mb-5">
-              <h3 className="text-white text-lg font-bold flex items-center gap-2">
-                <Ticket className="w-5 h-5" /> Tóm tắt đơn hàng
+            {/* Order summary card */}
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-lg shadow-black/5">
+              <h3 className="font-bold text-base flex items-center gap-2 mb-4">
+                <Ticket className="w-5 h-5 text-primary" />
+                Tóm tắt đơn hàng
               </h3>
 
-              <div className="space-y-3 border-t border-white/10 pt-4">
+              <div className="space-y-2.5 border-t border-border pt-4">
                 {ticketSummary.map((group, index) => (
                   <div key={index} className="flex justify-between items-center text-sm">
-                    <p className="text-muted-foreground">Vé {group.seatType} (x{group.count})</p>
-                    <p className="text-white font-medium">{formatCurrency(group.totalPrice)}</p>
+                    <p className="text-muted-foreground">Vé {group.seatType} (×{group.count})</p>
+                    <p className="font-semibold">{formatCurrency(group.totalPrice)}</p>
                   </div>
                 ))}
                 {orderData.foods?.map((item, index) => (
                   <div key={`food-${index}`} className="flex justify-between items-center text-sm">
-                    <p className="text-muted-foreground">{item.name} (x{item.quantity})</p>
-                    <p className="text-white font-medium">{formatCurrency(item.totalPrice)}</p>
+                    <p className="text-muted-foreground">{item.name} (×{item.quantity})</p>
+                    <p className="font-semibold">{formatCurrency(item.totalPrice)}</p>
                   </div>
                 ))}
               </div>
 
-              <div className="space-y-2 border-t border-white/10 pt-4">
+              <div className="space-y-2 border-t border-border pt-4 mt-2">
                 <div className="flex justify-between items-center text-sm">
                   <p className="text-muted-foreground">Tổng tiền vé</p>
-                  <p className="text-white">{formatCurrency(orderData.totalTicketPrice)}</p>
+                  <p className="font-medium">{formatCurrency(orderData.totalTicketPrice)}</p>
                 </div>
                 {(orderData.totalFoodPrice || 0) > 0 && (
                   <div className="flex justify-between items-center text-sm">
                     <p className="text-muted-foreground">Tổng tiền đồ ăn</p>
-                    <p className="text-white">{formatCurrency(orderData.totalFoodPrice)}</p>
+                    <p className="font-medium">{formatCurrency(orderData.totalFoodPrice)}</p>
                   </div>
                 )}
                 {(orderData.discountAmount || 0) > 0 && (
                   <div className="flex justify-between items-center text-sm">
                     <p className="text-muted-foreground">Giảm giá {orderData.promotionCode && `(${orderData.promotionCode})`}</p>
-                    <p className="text-green-500">-{formatCurrency(orderData.discountAmount)}</p>
+                    <p className="text-emerald-500 font-medium">−{formatCurrency(orderData.discountAmount)}</p>
                   </div>
                 )}
               </div>
 
-              <div className="flex justify-between items-center border-t border-white/10 pt-4">
-                <p className="text-white font-bold text-lg">Tổng cộng</p>
-                <p className="text-yellow-500 font-bold text-xl">{formatCurrency(orderData.finalPrice)}</p>
+              <div className="flex justify-between items-center border-t border-border pt-4 mt-2">
+                <p className="font-black text-lg">Tổng cộng</p>
+                <p className="text-yellow-500 font-black text-2xl">{formatCurrency(orderData.finalPrice)}</p>
               </div>
 
-              <div className="flex justify-between items-center text-sm text-muted-foreground pt-2">
+              <div className="flex justify-between items-center text-sm text-muted-foreground pt-3 border-t border-border mt-2">
                 <span>Thanh toán qua</span>
-                <span className="font-medium text-white">{extraInfo?.paymentMethod || "VNPAY"}</span>
+                <span className="font-bold text-foreground">{extraInfo?.paymentMethod || "VNPAY"}</span>
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-5">
+            {/* Action buttons */}
+            <div className="flex flex-col sm:flex-row gap-3">
               <Button
                 onClick={() => { localStorage.removeItem("pendingOrder"); router.push("/"); }}
                 variant="outline"
-                className="flex-1 gap-2"
+                className="flex-1 gap-2 hover:-translate-y-0.5 transition-all"
               >
                 <Home className="w-4 h-4" /> Về trang chủ
               </Button>
               <Button
                 onClick={() => { localStorage.removeItem("pendingOrder"); router.push("/profile"); }}
-                className="flex-1 gap-2"
+                className="flex-1 gap-2 hover:-translate-y-0.5 shadow-lg shadow-primary/30 transition-all"
               >
                 <Ticket className="w-4 h-4" /> Xem vé của tôi
               </Button>

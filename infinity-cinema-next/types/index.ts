@@ -139,7 +139,7 @@ export interface SeatShowTime {
 
 // ─── Order ────────────────────────────────────────────────
 export interface Order {
-  orderId: string;
+  orderId: string | number;
   orderStatus: string;
   bookingTime: string;
   totalTicketPrice: number;

@@ -11,7 +11,7 @@ export default async function HomePage() {
   ]);
 
   return (
-    <div className="min-h-screen pt-5">
+    <div className="min-h-screen">
       {/* Banner Carousel */}
       <HomeBannerCarousel banners={banners} />
 

@@ -59,12 +59,13 @@ export function VerifyEmailForm({ email, onClose }: VerifyEmailFormProps) {
     }
   };
 
+  // Dùng setTimeout thay vì setInterval để tránh tạo interval mới mỗi tick
   useEffect(() => {
     if (resendCooldown <= 0) return;
-    const timer = setInterval(() => {
+    const timer = setTimeout(() => {
       setResendCooldown((prev) => prev - 1);
     }, 1000);
-    return () => clearInterval(timer);
+    return () => clearTimeout(timer);
   }, [resendCooldown]);
 
   return (

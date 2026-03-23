@@ -57,7 +57,9 @@ export default function PaymentPage() {
     let label = membershipData.name || "MEMBER";
 
     const now = new Date();
-    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const storedUser = typeof window !== "undefined"
+      ? JSON.parse(localStorage.getItem("user") || "{}")
+      : {};
     if (storedUser.birthday) {
       const birthDate = new Date(storedUser.birthday);
       if (birthDate.getMonth() === now.getMonth()) {
@@ -86,6 +88,7 @@ export default function PaymentPage() {
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
 
+  // Countdown – dùng [] để tránh restart interval khi router reference thay đổi
   useEffect(() => {
     const interval = setInterval(() => {
       setTimeLeft((prev) => {
@@ -102,7 +105,8 @@ export default function PaymentPage() {
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [router]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const minutes = String(Math.floor(timeLeft / 60)).padStart(2, "0");
   const seconds = String(timeLeft % 60).padStart(2, "0");
@@ -189,112 +193,139 @@ export default function PaymentPage() {
       <div className="max-w-6xl mx-auto">
         <button
           onClick={() => router.back()}
-          className="mt-5 flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 cursor-pointer transition-colors"
+          className="mt-5 flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 cursor-pointer transition-colors group"
         >
-          <ChevronLeft className="w-5 h-5" /> Quay lại
+          <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+          Quay lại
         </button>
 
         <form onSubmit={handleSubmit} className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            <div className="bg-card border border-border rounded-md p-6">
-              <h1 className="text-2xl font-semibold mb-6">Chọn Phương Thức Thanh Toán</h1>
-              <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-4">
+          {/* Payment Methods */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-lg shadow-black/5">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-1 h-6 bg-primary rounded-full" />
+                <h1 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-foreground to-foreground/60">
+                  Chọn Phương Thức Thanh Toán
+                </h1>
+              </div>
+
+              <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-3">
                 <label
-                  className={`flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
-                    paymentMethod === "MOMO" ? "border-[#d82d8b] bg-[#d82d8b]/5" : "border-border"
+                  className={`flex items-center gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
+                    paymentMethod === "MOMO"
+                      ? "border-[#d82d8b] bg-[#d82d8b]/8 shadow-lg shadow-[#d82d8b]/10"
+                      : "border-border hover:border-[#d82d8b]/40 bg-secondary/30"
                   }`}
                 >
                   <RadioGroupItem value="MOMO" id="pm1" />
-                  <div>
-                    <p className="text-lg font-semibold text-[#d82d8b]">MOMO</p>
+                  <div className="flex-1">
+                    <p className="text-base font-bold text-[#d82d8b]">MOMO</p>
                     <p className="text-sm text-muted-foreground">Thanh toán qua ví MoMo</p>
                   </div>
+                  <div className="w-10 h-10 rounded-xl bg-[#d82d8b]/10 flex items-center justify-center">
+                    <span className="text-lg font-black text-[#d82d8b]">M</span>
+                  </div>
                 </label>
+
                 <label
-                  className={`flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
-                    paymentMethod === "VNPAY" ? "border-[#0066b3] bg-[#0066b3]/5" : "border-border"
+                  className={`flex items-center gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
+                    paymentMethod === "VNPAY"
+                      ? "border-[#0066b3] bg-[#0066b3]/8 shadow-lg shadow-[#0066b3]/10"
+                      : "border-border hover:border-[#0066b3]/40 bg-secondary/30"
                   }`}
                 >
                   <RadioGroupItem value="VNPAY" id="pm2" />
-                  <div>
-                    <p className="text-lg font-semibold text-[#0066b3]">VNPAY</p>
+                  <div className="flex-1">
+                    <p className="text-base font-bold text-[#0066b3]">VNPAY</p>
                     <p className="text-sm text-muted-foreground">Thanh toán qua cổng VNPAY (ATM/QR)</p>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-[#0066b3]/10 flex items-center justify-center">
+                    <span className="text-lg font-black text-[#0066b3]">V</span>
                   </div>
                 </label>
               </RadioGroup>
             </div>
           </div>
 
+          {/* Order Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-card border border-border rounded-md p-6 sticky top-24">
-              <div className="flex mb-6">
+            <div className="bg-card border border-border rounded-2xl p-5 sticky top-24 shadow-xl shadow-black/10">
+              {/* Movie poster + info */}
+              <div className="flex mb-5 gap-3">
                 {bookingInfo?.moviePoster && (
                   <img
                     src={bookingInfo.moviePoster}
                     alt="Poster phim"
-                    className="w-20 h-28 rounded-md object-cover mr-4 border border-border flex-shrink-0"
+                    className="w-16 h-24 rounded-xl object-cover flex-shrink-0 border border-border shadow-md"
                   />
                 )}
                 <div className="min-w-0">
-                  <h3 className="text-lg font-bold leading-tight text-card-foreground">{bookingInfo?.movie}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">{bookingInfo?.cinema}</p>
-                  <p className="text-sm text-muted-foreground">{bookingInfo?.date} – {bookingInfo?.time}</p>
+                  <h3 className="text-sm font-bold leading-tight text-card-foreground line-clamp-2 mb-1">
+                    {bookingInfo?.movie}
+                  </h3>
+                  <p className="text-xs text-muted-foreground">{bookingInfo?.cinema}</p>
+                  <p className="text-xs text-muted-foreground">{bookingInfo?.date}</p>
+                  <p className="text-xs font-semibold text-foreground">{bookingInfo?.time}</p>
                 </div>
               </div>
 
-              <div className="border-t border-dashed border-border pt-6 mb-6">
-                <p className="font-semibold mb-3">Vé đã đặt</p>
+              {/* Seats */}
+              <div className="border-t border-dashed border-border pt-4 mb-4">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Vé đã đặt</p>
                 {Object.values(groupedSeats).map((group) => (
-                  <div key={group.seatType} className="flex justify-between items-center text-sm mb-2">
-                    <span className="text-muted-foreground"><span className="mr-1">{group.count}×</span>{group.seatType}</span>
-                    <span>{formatCurrency(group.totalPrice)}</span>
+                  <div key={group.seatType} className="flex justify-between items-center text-sm mb-1.5">
+                    <span className="text-muted-foreground">{group.count}× {group.seatType}</span>
+                    <span className="font-medium">{formatCurrency(group.totalPrice)}</span>
                   </div>
                 ))}
-                <p className="text-sm mt-2 text-muted-foreground">
-                  Ghế: <span className="text-foreground">{(bookingInfo?.seats || []).map((s) => `${s.seatRow}${s.seatNumber}`).join(", ")}</span>
+                <p className="text-xs mt-2 text-muted-foreground">
+                  Ghế: <span className="text-foreground font-medium">{(bookingInfo?.seats || []).map((s) => `${s.seatRow}${s.seatNumber}`).join(", ")}</span>
                 </p>
               </div>
 
               {bookingInfo?.foods && bookingInfo.foods.length > 0 && (
-                <div className="mb-6">
-                  <p className="font-semibold mb-3">Đồ ăn &amp; Nước uống</p>
+                <div className="mb-4">
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Đồ ăn &amp; Nước</p>
                   {bookingInfo.foods.map((item) => (
-                    <div key={item.id} className="flex justify-between items-center text-sm mb-2">
+                    <div key={item.id} className="flex justify-between items-center text-sm mb-1.5">
                       <span className="flex-1 pr-2 text-muted-foreground">{item.qty}× {item.name}</span>
-                      <span className="whitespace-nowrap">{formatCurrency(item.totalPrice)}</span>
+                      <span className="whitespace-nowrap font-medium">{formatCurrency(item.totalPrice)}</span>
                     </div>
                   ))}
                 </div>
               )}
 
-              <div className="border-t border-dashed border-border pt-4 space-y-3">
+              {/* Price summary */}
+              <div className="border-t border-dashed border-border pt-4 space-y-2.5 mb-4">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Tạm tính</span>
-                  <span>{formatCurrency(bookingInfo?.total || 0)}</span>
+                  <span className="font-medium">{formatCurrency(bookingInfo?.total || 0)}</span>
                 </div>
-                <div className="flex justify-between text-sm text-green-500">
+                <div className="flex justify-between text-sm text-emerald-500">
                   <span>Giảm giá ({isTierLoading ? "..." : discountInfo.label})</span>
                   <span>−{formatCurrency(discountInfo.amount)}</span>
                 </div>
-                <div className="flex justify-between text-xl font-bold pt-2 border-t border-border">
+                <div className="flex justify-between text-lg font-black pt-2 border-t border-border">
                   <span>Tổng cộng</span>
                   <span className="text-primary">{formatCurrency(finalPrice)}</span>
                 </div>
               </div>
 
-              <div className="my-6 py-3 bg-primary/10 rounded-lg text-center border border-primary/20">
-                <p className="text-xs text-muted-foreground uppercase tracking-widest">Thời gian còn lại</p>
-                <div className={`text-2xl font-mono font-bold ${timeLeft <= 60 ? "text-red-500 animate-pulse" : "text-primary"}`}>
+              {/* Countdown */}
+              <div className="mb-5 py-3 px-4 bg-primary/8 rounded-xl border border-primary/20 text-center">
+                <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Thời gian còn lại</p>
+                <div className={`text-2xl font-black font-mono ${timeLeft <= 60 ? "text-red-500 animate-pulse" : "text-primary"}`}>
                   {minutes}:{seconds}
                 </div>
               </div>
 
               <Button
                 type="submit"
-                className="w-full py-6 text-lg font-bold bg-primary hover:bg-primary/90 cursor-pointer"
+                className="w-full py-6 text-base font-black bg-primary hover:bg-primary/90 hover:-translate-y-0.5 shadow-lg shadow-primary/30 transition-all cursor-pointer"
                 disabled={loading || isTierLoading}
               >
-                {loading ? "ĐANG XỬ LÝ..." : "THANH TOÁN"}
+                {loading ? "ĐANG XỬ LÝ..." : "THANH TOÁN NGAY"}
               </Button>
             </div>
           </div>

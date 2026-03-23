@@ -30,10 +30,11 @@ export function Navbar() {
     localStorage.removeItem("user");
     localStorage.removeItem("pendingOrder");
     setUser(null);
-    if (pathname !== "/") {
+    // Dùng window.location thay vì đóng gói pathname vào dep → tránh tạo reference mới mỗi route change
+    if (window.location.pathname !== "/") {
       router.push("/login");
     }
-  }, [router, pathname]);
+  }, [router]); // bỏ pathname khỏi deps
 
   const isTokenExpired = (token: string): boolean => {
     if (!token) return true;
@@ -87,7 +88,9 @@ export function Navbar() {
     const storedUser = localStorage.getItem("user");
 
     if (!token || isTokenExpired(token)) {
-      if (token || storedUser) handleLogout();
+      if (token || storedUser) {
+          handleLogout();
+      }
       return;
     }
 
@@ -124,7 +127,7 @@ export function Navbar() {
 
   return (
     <nav
-      className={`sticky top-0 w-full z-50 transition-transform duration-300 bg-black/85 border-b border-white/10 shadow-lg backdrop-blur-md ${
+      className={`sticky top-0 w-full z-50 transition-transform duration-300 bg-black border-b border-white/10 shadow-lg backdrop-blur-md ${
         isVisible ? "translate-y-0" : "-translate-y-full"
       }`}
     >
@@ -133,8 +136,10 @@ export function Navbar() {
           {/* Left: Logo & Nav Links */}
           <div className="flex items-center gap-8">
             <Link href="/" className="flex items-center gap-2 group">
-              <Film className="w-8 h-8 text-primary transition-transform group-hover:scale-110" />
-              <span className="text-xl sm:text-2xl font-bold tracking-wider">INFINITY CINEMA</span>
+              <Film className="w-8 h-8 text-primary transition-transform duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(229,115,22,0.7)]" />
+              <span className="text-xl sm:text-2xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-white/80">
+                INFINITY CINEMA
+              </span>
             </Link>
 
             <div className="hidden md:flex items-center gap-6">
@@ -142,8 +147,8 @@ export function Navbar() {
                 <Link
                   key={path}
                   href={path}
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
-                    isActive(path) ? "text-primary" : "text-muted-foreground"
+                  className={`text-base font-medium transition-colors hover:text-primary ${
+                    isActive(path) ? "text-primary" : "text-white"
                   }`}
                 >
                   {path === "/" ? "Trang Chủ" : "Sự kiện"}
@@ -161,18 +166,18 @@ export function Navbar() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Tìm kiếm phim..."
-                  className="hidden sm:block h-9 w-48 lg:w-64 rounded-full bg-white/10 border border-white/20 px-4 text-sm text-white focus:outline-none focus:border-primary transition-all"
+                  className="hidden sm:block h-9 w-48 lg:w-64 rounded-full bg-white/10 border border-white/20 px-4 text-base text-white placeholder:text-white/50 focus:outline-none focus:border-primary focus:bg-white/15 transition-all"
                 />
               )}
               <button
                 onClick={() => setShowSearch(!showSearch)}
-                className="cursor-pointer p-2 hover:text-primary transition-colors"
+                className="cursor-pointer p-2 hover:text-primary transition-colors ounded-full hover:bg-white/10r text-white"
               >
                 <Search className="w-5 h-5" />
               </button>
             </div>
 
-            <ThemeToggle />
+            <ThemeToggle/>
 
             {user ? (
               <div
@@ -184,7 +189,7 @@ export function Navbar() {
                   <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center border border-primary/50">
                     <User2 className="w-5 h-5 text-primary" />
                   </div>
-                  <span className="hidden lg:block text-sm font-medium">{user.firstname}</span>
+                  <span className="hidden lg:block text-base font-medium text-white">{user.firstname}</span>
                 </button>
 
                 {showUserMenu && (
@@ -195,21 +200,21 @@ export function Navbar() {
                           {user.firstname} {user.lastname}
                         </p>
                         <p className="text-sm uppercase tracking-tighter font-semibold text-primary mt-1">
-                          Hạng: {user.memberShipTierName}
+                           {user.memberShipTierName}
                         </p>
                       </div>
 
                       <div className="p-1">
                         <button
                           onClick={() => router.push("/profile")}
-                          className="cursor-pointer w-full px-3 py-2 text-left text-sm hover:bg-white/10 rounded-md transition-colors flex items-center gap-3"
+                          className="cursor-pointer w-full px-3 py-2 text-left text-base text-white hover:bg-white/10 rounded-md transition-colors flex items-center gap-3"
                         >
-                          <User className="w-4 h-4 text-muted-foreground" />
+                          <User className="w-4 h-4 text-white" />
                           Tài khoản của tôi
                         </button>
                         <button
                           onClick={handleLogout}
-                          className="cursor-pointer w-full px-3 py-2 text-left text-sm hover:bg-red-500/10 text-red-400 rounded-md transition-colors flex items-center gap-3"
+                          className="cursor-pointer w-full px-3 py-2 text-left text-base hover:bg-red-500/10 text-red-400 rounded-md transition-colors flex items-center gap-3"
                         >
                           <LogOut className="w-4 h-4" />
                           Đăng xuất

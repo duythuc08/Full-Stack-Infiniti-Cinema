@@ -5,15 +5,16 @@ import { useRouter, useParams } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getBookingState, mergeBookingState } from "@/utils/bookingStorage";
 import { fetchSeatShowTimes, fetchSeatPrices } from "@/libs/service/booking.service";
 import type { SeatShowTime, SeatDetail } from "@/types";
 
-const seatUIConfig: Record<string, { label: string; color: string }> = {
-  STANDARD: { label: "Ghế đơn", color: "bg-gray-600" },
-  VIP: { label: "VIP", color: "bg-yellow-600" },
-  COUPLE: { label: "Ghế đôi", color: "bg-pink-500" },
-  DEFAULT: { label: "Ghế", color: "bg-gray-400" },
+const seatUIConfig: Record<string, { label: string; color: string; selectedColor: string }> = {
+  STANDARD: { label: "Ghế đơn", color: "bg-zinc-600 hover:bg-zinc-500", selectedColor: "bg-primary" },
+  VIP: { label: "VIP", color: "bg-yellow-700 hover:bg-yellow-600", selectedColor: "bg-primary" },
+  COUPLE: { label: "Ghế đôi", color: "bg-pink-700 hover:bg-pink-600", selectedColor: "bg-primary" },
+  DEFAULT: { label: "Ghế", color: "bg-zinc-500 hover:bg-zinc-400", selectedColor: "bg-primary" },
 };
 
 export default function SeatSelectionPage() {
@@ -148,9 +149,29 @@ export default function SeatSelectionPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-20 flex flex-col items-center justify-center gap-4">
-        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-        <p className="text-muted-foreground">Đang tải sơ đồ ghế...</p>
+      <div className="min-h-screen pt-20 px-4 sm:px-6 lg:px-8 pb-32 bg-background">
+        <div className="max-w-6xl mx-auto space-y-8">
+          <Skeleton className="h-6 w-24 rounded-xl" />
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-64 rounded-xl" />
+            <Skeleton className="h-5 w-48 rounded-xl" />
+          </div>
+          {/* Screen skeleton */}
+          <Skeleton className="h-3 max-w-3xl mx-auto rounded-full" />
+          {/* Seat grid skeleton */}
+          <div className="space-y-3 w-fit mx-auto">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <Skeleton className="w-8 h-8 rounded-md" />
+                <div className="flex gap-1.5">
+                  {[...Array(10)].map((_, j) => (
+                    <Skeleton key={j} className="w-8 h-8 rounded-t-lg" />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -160,65 +181,77 @@ export default function SeatSelectionPage() {
   return (
     <div className="min-h-screen pt-20 px-4 sm:px-6 lg:px-8 pb-32 bg-background">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
+        {/* Back button */}
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 transition-colors cursor-pointer"
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 transition-colors cursor-pointer group"
         >
-          <ChevronLeft className="w-5 h-5" /> Quay lại
+          <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+          Quay lại
         </button>
 
         <div className="mb-8">
-          <h1 className="mb-2 text-2xl font-bold">Chọn ghế của bạn</h1>
+          <h1 className="mb-1.5 text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-foreground to-foreground/70">
+            Chọn ghế của bạn
+          </h1>
           <p className="text-muted-foreground">
             {bookingInfo.movie || "Tên phim"} • {bookingInfo.roomName || "Phòng chiếu"}
           </p>
         </div>
 
-        {/* Screen */}
-        <div className="mb-16">
+        {/* Screen indicator */}
+        <div className="mb-12">
           <div className="max-w-3xl mx-auto">
-            <div className="h-2 bg-gradient-to-b from-white/50 to-transparent rounded-t-[100%] mb-4" />
-            <p className="text-center text-sm text-muted-foreground tracking-widest uppercase">Màn hình</p>
+            <div className="h-2.5 bg-gradient-to-b from-white/60 to-transparent rounded-t-[100%] mb-2 shadow-[0_-4px_20px_rgba(255,255,255,0.15)]" />
+            <p className="text-center text-xs text-muted-foreground tracking-[0.3em] uppercase font-medium">
+              Màn hình
+            </p>
           </div>
         </div>
 
         {/* Seat Map */}
-        <div className="mb-8 overflow-x-auto">
+        <div className="mb-10 overflow-x-auto">
           <div className="inline-block min-w-full">
             <div className="space-y-2 mx-auto w-fit">
               {rows.map((row) => (
                 <div key={row} className="flex items-center gap-2">
-                  <span className="w-8 text-center text-muted-foreground font-bold text-sm">{row}</span>
-                  <div className="flex gap-1 sm:gap-2">
+                  <span className="w-8 text-center text-muted-foreground font-bold text-xs">{row}</span>
+                  <div className="flex gap-1 sm:gap-1.5">
                     {seatData[row].map((seat) => {
                       const isOccupied = isSeatOccupied(seat);
                       const isSelected = isSeatSelected(seat.seatId);
                       const uiInfo = seatUIConfig[seat.seatType] || seatUIConfig.DEFAULT;
                       const price = seatPrices[seat.seatType] || 0;
                       const isCouple = seat.seatType === "COUPLE";
-                      const marginClass = isCouple ? "mx-0" : "mx-[1px] sm:mx-[2px]";
+                      const marginClass = isCouple ? "mx-0" : "mx-[1px] sm:mx-[1px]";
 
                       return (
                         <button
                           key={seat.seatId}
                           onClick={() => toggleSeat(seat)}
                           disabled={isOccupied}
-                          className={`${marginClass} group cursor-pointer h-6 sm:h-8 rounded-t-lg transition-all flex items-center justify-center text-[10px]
+                          className={`
+                            ${marginClass} group cursor-pointer h-6 sm:h-8 rounded-t-lg transition-all duration-150 flex items-center justify-center text-[10px]
                             ${isCouple ? "w-8 sm:w-10 rounded-none first:rounded-l-lg last:rounded-r-lg" : "w-6 sm:w-8"}
-                            ${isOccupied ? "bg-red-900/50 cursor-not-allowed opacity-60" : isSelected ? "bg-primary scale-110 z-10 shadow-lg" : uiInfo.color + " hover:scale-110 hover:opacity-90"}
-                            ${isCouple && !isOccupied && !isSelected ? "border-r border-black/10" : ""}
+                            ${
+                              isOccupied
+                                ? "bg-red-900/40 cursor-not-allowed opacity-50"
+                                : isSelected
+                                ? "bg-primary scale-110 z-10 ring-2 ring-primary/60 ring-offset-1 ring-offset-background shadow-[0_0_10px_2px] shadow-primary/50"
+                                : uiInfo.color + " hover:scale-110 hover:z-10"
+                            }
+                            ${isCouple && !isOccupied && !isSelected ? "border-r border-black/20" : ""}
                           `}
                           title={`${seat.seatRow}${seat.seatNumber} – ${uiInfo.label} (${formatCurrency(price)})`}
                         >
-                          <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none text-white font-medium">
+                          <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none text-white font-bold text-[9px]">
                             {seat.seatNumber}
                           </span>
                         </button>
                       );
                     })}
                   </div>
-                  <span className="w-8 text-center text-muted-foreground font-bold text-sm">{row}</span>
+                  <span className="w-8 text-center text-muted-foreground font-bold text-xs">{row}</span>
                 </div>
               ))}
             </div>
@@ -226,35 +259,40 @@ export default function SeatSelectionPage() {
         </div>
 
         {/* Legend */}
-        <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mb-8">
+        <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mb-10 py-4 px-6 bg-secondary/30 rounded-2xl border border-border/50">
           {Object.entries(seatUIConfig).map(([type, config]) => {
             if (type === "DEFAULT") return null;
             const price = seatPrices[type] || 0;
             return (
               <div key={type} className="flex items-center gap-2">
-                <div className={`w-6 h-6 ${config.color} rounded-t-lg flex-shrink-0`} />
-                <span className="text-sm text-muted-foreground">{config.label}{price > 0 ? ` (${formatCurrency(price)})` : ""}</span>
+                <div className={`w-6 h-6 ${config.color.split(" ")[0]} rounded-t-lg flex-shrink-0`} />
+                <span className="text-xs text-muted-foreground">
+                  {config.label}
+                  {price > 0 ? ` – ${formatCurrency(price)}` : ""}
+                </span>
               </div>
             );
           })}
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-primary rounded-t-lg flex-shrink-0" />
-            <span className="text-sm text-muted-foreground">Đang chọn</span>
+            <div className="w-6 h-6 bg-primary rounded-t-lg flex-shrink-0 shadow-[0_0_8px_2px] shadow-primary/50" />
+            <span className="text-xs text-muted-foreground">Đang chọn</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-red-900/50 rounded-t-lg flex-shrink-0" />
-            <span className="text-sm text-muted-foreground">Đã đặt</span>
+            <div className="w-6 h-6 bg-red-900/40 rounded-t-lg flex-shrink-0 opacity-60" />
+            <span className="text-xs text-muted-foreground">Đã đặt</span>
           </div>
         </div>
       </div>
 
-      {/* Bottom Bar */}
+      {/* Bottom sticky bar */}
       {selectedSeats.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 shadow-2xl">
+        <div className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-xl border-t border-border p-4 shadow-2xl">
           <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Đã chọn {selectedSeats.length} ghế</p>
-              <p className="text-sm font-medium">
+              <p className="text-xs text-muted-foreground mb-0.5">
+                Đã chọn {selectedSeats.length} ghế
+              </p>
+              <p className="text-sm font-medium text-foreground">
                 {Object.values(seatData)
                   .flat()
                   .filter((s) => selectedSeats.includes(s.seatId))
@@ -265,10 +303,14 @@ export default function SeatSelectionPage() {
             <div className="flex items-center gap-4">
               <div className="text-right">
                 <p className="text-xs text-muted-foreground">Tạm tính</p>
-                <p className="text-2xl text-primary font-bold">{formatCurrency(calculateTotal())}</p>
+                <p className="text-2xl text-primary font-black">{formatCurrency(calculateTotal())}</p>
               </div>
-              <Button className="cursor-pointer" size="lg" onClick={handleGoToFoods}>
-                Tiếp tục
+              <Button
+                className="cursor-pointer shadow-lg shadow-primary/30 hover:-translate-y-0.5 transition-all"
+                size="lg"
+                onClick={handleGoToFoods}
+              >
+                Tiếp tục →
               </Button>
             </div>
           </div>
