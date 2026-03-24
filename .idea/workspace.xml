@@ -2,23 +2,16 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3728283f-c169-4bc9-8953-7777d9a57214" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/infinity-cinema-next/app/(booking)/food-selection/[id]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/infinity-cinema-next/app/(booking)/food-selection/[id]/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/infinity-cinema-next/app/(booking)/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/infinity-cinema-next/app/(booking)/layout.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/infinity-cinema-next/app/(booking)/payment-success/[id]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/infinity-cinema-next/app/(booking)/payment-success/[id]/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/infinity-cinema-next/app/(booking)/payment/[id]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/infinity-cinema-next/app/(booking)/payment/[id]/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/infinity-cinema-next/app/(booking)/seat-selection/[id]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/infinity-cinema-next/app/(booking)/seat-selection/[id]/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/infinity-cinema-next/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/infinity-cinema-next/app/globals.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/infinity-cinema-next/app/movie/[id]/loading.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/infinity-cinema-next/app/movie/[id]/loading.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/infinity-cinema-next/app/movie/[id]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/infinity-cinema-next/app/movie/[id]/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/infinity-cinema-next/app/not-found.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/infinity-cinema-next/app/not-found.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/infinity-cinema-next/app/profile/components/OrderDetailDialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/infinity-cinema-next/app/profile/components/OrderDetailDialog.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/infinity-cinema-next/app/profile/components/OrderHistory.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/infinity-cinema-next/app/profile/components/OrderHistory.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/infinity-cinema-next/app/profile/components/PersonalInfo.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/infinity-cinema-next/app/profile/components/PersonalInfo.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/infinity-cinema-next/app/profile/components/ProfileSidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/infinity-cinema-next/app/profile/components/ProfileSidebar.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/infinity-cinema-next/app/profile/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/infinity-cinema-next/app/profile/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/infinity-cinema-next/components/Footer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/infinity-cinema-next/components/Footer.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/infinity-cinema-next/components/HomeBannerCarousel.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/infinity-cinema-next/components/HomeBannerCarousel.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/infinity-cinema-next/components/MovieCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/infinity-cinema-next/components/MovieCard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/infinity-cinema-next/components/MovieCarousel.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/infinity-cinema-next/components/MovieCarousel.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/infinity-cinema-next/components/MovieShowTime.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/infinity-cinema-next/components/MovieShowTime.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/infinity-cinema-next/components/Navbar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/infinity-cinema-next/components/Navbar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/infinity-cinema-next/components/VerifyEmailForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/infinity-cinema-next/components/VerifyEmailForm.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/infinity-cinema-next/types/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/infinity-cinema-next/types/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/moive-ticket-infinity_cinema/src/main/java/com/duythuc_dh52201541/moive_ticket_infinity_cinema/dto/respone/OrderResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/moive-ticket-infinity_cinema/src/main/java/com/duythuc_dh52201541/moive_ticket_infinity_cinema/dto/respone/OrderResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/moive-ticket-infinity_cinema/src/main/java/com/duythuc_dh52201541/moive_ticket_infinity_cinema/mapper/OrderMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/moive-ticket-infinity_cinema/src/main/java/com/duythuc_dh52201541/moive_ticket_infinity_cinema/mapper/OrderMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/moive-ticket-infinity_cinema/src/main/java/com/duythuc_dh52201541/moive_ticket_infinity_cinema/repository/OrderRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/moive-ticket-infinity_cinema/src/main/java/com/duythuc_dh52201541/moive_ticket_infinity_cinema/repository/OrderRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/moive-ticket-infinity_cinema/src/main/java/com/duythuc_dh52201541/moive_ticket_infinity_cinema/service/OrderService.java" beforeDir="false" afterPath="$PROJECT_DIR$/moive-ticket-infinity_cinema/src/main/java/com/duythuc_dh52201541/moive_ticket_infinity_cinema/service/OrderService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,39 +26,39 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "duythuc08"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;duythuc08&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/duythuc08/Full-Stack-Infiniti-Cinema.git",
-    "accountId": "20a048fd-d803-4652-a643-5311f16c9092"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/duythuc08/Full-Stack-Infiniti-Cinema.git&quot;,
+    &quot;accountId&quot;: &quot;20a048fd-d803-4652-a643-5311f16c9092&quot;
   }
-}]]></component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 2
-}]]></component>
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
   <component name="ProjectId" id="3BL26sz67PD7P091TsIkoOkdx0G" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "D:/DoAnThucTapChuyenNganh/Full-Stack-Infiniti-Cinema",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/DoAnThucTapChuyenNganh/Full-Stack-Infiniti-Cinema&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -82,6 +75,7 @@
       <option name="presentableId" value="Default" />
       <updated>1774253857778</updated>
       <workItem from="1774253859091" duration="20000" />
+      <workItem from="1774317078063" duration="2000" />
     </task>
     <servers />
   </component>

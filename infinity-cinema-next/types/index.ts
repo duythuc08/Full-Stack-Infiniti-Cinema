@@ -138,18 +138,49 @@ export interface SeatShowTime {
 }
 
 // ─── Order ────────────────────────────────────────────────
+export interface OrderTicket {
+  orderTicketId: number;
+  seatName: string;
+  seatType: string;
+  price: number;
+  roomName: string | null;
+  movieName: string | null;
+  showTime: string | null;
+}
+
+export interface OrderFood {
+  foodId: number;
+  name: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
 export interface Order {
-  orderId: string | number;
+  orderId: number;
+  userId: string | null;
+  fullName: string;
   orderStatus: string;
   bookingTime: string;
+  expiredTime: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
   totalTicketPrice: number;
   totalFoodPrice: number;
   discountAmount: number;
+  memberDiscountAmount: number | null;
   finalPrice: number;
-  qrCode?: string;
-  tickets?: { seatName: string; seatType: string; price: number }[];
-  foods?: { name: string; quantity: number; totalPrice: number }[];
-  fullName?: string;
+  promotionCode: string | null;
+  qrCode: string | null;
+  pointsEarned: number;
+  tickets: OrderTicket[];
+  foods: OrderFood[];
+  // Trích xuất từ vé đầu tiên (populated by @AfterMapping)
+  movieTitle: string | null;
+  cinemaName: string | null;
+  cinemaAddress: string | null;
+  showTime: string | null;
+  roomName: string | null;
 }
 
 // ─── User ─────────────────────────────────────────────────
@@ -159,8 +190,7 @@ export interface UserInfo {
   firstname: string;
   lastname: string;
   phoneNumber: string;
-  birthday: string;
-  membetShipTierName: string;
+  birthday: string | null;
   memberShipTierName: string;
   loyaltyPoints: number;
 }

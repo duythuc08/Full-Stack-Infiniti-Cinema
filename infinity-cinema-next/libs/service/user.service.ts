@@ -16,11 +16,24 @@ export async function fetchMyInfo(token: string): Promise<UserInfo> {
   return data.result as UserInfo;
 }
 
-export async function updateMyInfo(token: string, payload: Partial<UserInfo>): Promise<UserInfo> {
+export async function updateMyInfo(
+  token: string,
+  payload: { firstname: string; lastname: string; phoneNumber: string; birthday: string }
+): Promise<UserInfo> {
+  const body: Record<string, string> = {
+    firstname:   payload.firstname,
+    lastname:    payload.lastname,
+    phoneNumber: payload.phoneNumber,
+  };
+  // Chỉ gửi birthday khi có giá trị hợp lệ — tránh BE parse lỗi LocalDate
+  if (payload.birthday) {
+    body.birthday = payload.birthday;
+  }
+
   const res = await fetch(`${BASE_URL}/users/myInfo`, {
     method: "PUT",
     headers: authHeaders(token),
-    body: JSON.stringify(payload),
+    body: JSON.stringify(body),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || "Cập nhật thông tin thất bại");

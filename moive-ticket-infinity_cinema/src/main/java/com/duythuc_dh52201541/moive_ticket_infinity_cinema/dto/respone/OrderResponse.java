@@ -35,4 +35,11 @@ public class OrderResponse {
 
     BigDecimal memberDiscountAmount;
     int pointsEarned;
+
+    // Thông tin rạp chiếu & phim (trích từ vé đầu tiên)
+    String movieTitle;
+    String cinemaName;
+    String cinemaAddress;
+    String showTime;
+    String roomName;
 }

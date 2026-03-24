@@ -22,6 +22,7 @@ public interface OrderRepository extends JpaRepository<Orders,Long> {
             "orderTickets.seatShowTime.seats.rooms",
             "orderTickets.seatShowTime.showTimes.movies",
             "orderTickets.seatShowTime.showTimes.rooms",
+            "orderTickets.seatShowTime.showTimes.rooms.cinemas",
             "orderFoods.foods"
     })
     List<Orders> findByUsers_UserId(String usersUserId);

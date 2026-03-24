@@ -25,7 +25,7 @@ const TABS = [
 ];
 
 export function ProfileSidebar({ activeTab, onTabChange, userInfo, onLogout, loading }: Props) {
-  const tierName  = userInfo?.membetShipTierName || userInfo?.memberShipTierName || "MEMBER";
+  const tierName  = userInfo?.memberShipTierName ?? "MEMBER";
   const tierColor = TIER_COLORS[tierName] ?? "text-slate-500";
   const fullName  = userInfo ? `${userInfo.firstname || ""} ${userInfo.lastname || ""}`.trim() : "";
   const initials  = userInfo
@@ -46,7 +46,7 @@ export function ProfileSidebar({ activeTab, onTabChange, userInfo, onLogout, loa
           </div>
         ) : (
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/80 to-primary flex items-center justify-center text-white font-black text-base shadow-md shadow-primary/30 flex-shrink-0 select-none">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/80 to-primary flex items-center justify-center text-primary-foreground font-black text-base shadow-md shadow-primary/30 flex-shrink-0 select-none">
               {initials || <User className="w-5 h-5" />}
             </div>
             <div className="min-w-0">

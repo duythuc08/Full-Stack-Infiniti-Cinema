@@ -26,7 +26,7 @@ const TIER_STYLE: Record<string, { text: string; bar: string; bg: string }> = {
 };
 
 export function PersonalInfo({ userInfo, allTiers, form, saving, loading, onFormChange, onSave }: Props) {
-  const tierName = userInfo?.membetShipTierName || userInfo?.memberShipTierName || "MEMBER";
+  const tierName = userInfo?.memberShipTierName ?? "MEMBER";
   const tier     = TIER_STYLE[tierName] ?? TIER_STYLE["MEMBER"];
   const pts      = userInfo?.loyaltyPoints || 0;
 
@@ -62,15 +62,22 @@ export function PersonalInfo({ userInfo, allTiers, form, saving, loading, onForm
                 — {pts.toLocaleString("vi-VN")} điểm
               </span>
             </div>
+
             <div className="space-y-1.5">
-              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+              <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                <span>{pts.toLocaleString("vi-VN")} điểm</span>
+                {nextTier && (
+                  <span>{nextTier.pointsRequired.toLocaleString("vi-VN")} điểm</span>
+                )}
+              </div>
+              <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-700 ${tier.bar}`}
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
               {nextTier ? (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground mt-1">
                   Còn{" "}
                   <span className={`font-bold ${tier.text}`}>
                     {(nextTier.pointsRequired - pts).toLocaleString("vi-VN")} điểm
@@ -81,7 +88,7 @@ export function PersonalInfo({ userInfo, allTiers, form, saving, loading, onForm
                   </span>
                 </p>
               ) : (
-                <p className="text-xs text-amber-500 font-medium">✨ Bạn đang ở hạng cao nhất</p>
+                <p className="text-xs text-amber-500 font-medium">Bạn đang ở hạng cao nhất</p>
               )}
             </div>
           </>

@@ -1,9 +1,11 @@
 "use client";
 
 import { Ticket } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import {Badge, BadgeProps} from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { createVnpayRepaymentUrl } from "@/libs/service/user.service";
 import type { Order } from "@/types";
 
 interface Props {
@@ -12,22 +14,26 @@ interface Props {
   onSelectOrder: (order: Order) => void;
 }
 
-const STATUS_MAP: Record<string, { label: string; className: string }> = {
-  PENDING: {
-    label: "Đang chờ thanh toán",
-    className: "text-amber-700 bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400 border-transparent",
-  },
-  CANCELLED: {
-    label: "Đã hủy",
-    className: "text-rose-700 bg-rose-100 dark:bg-rose-900/30 dark:text-rose-400 border-transparent",
-  },
+const STATUS_MAP: Record<string, { label: string; variant: BadgeProps["variant"] }> = {
+    PENDING: {
+        label: "Chờ thanh toán",
+        variant: "pending",
+    },
+    CANCELLED: {
+        label: "Đã hủy",
+        variant: "cancelled", // hoặc dùng "destructive" tùy bạn thiết lập ở file Badge.tsx
+    },
+    PAID: {
+        label: "Đã thanh toán",
+        variant: "paid",
+    },
 };
 
 const getStatus = (status: string) =>
-  STATUS_MAP[status] ?? {
-    label: "Đã thanh toán",
-    className: "text-emerald-700 bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 border-transparent",
-  };
+    STATUS_MAP[status] ?? {
+        label: status,
+        variant: "default",
+    };
 
 const formatCurrency = (n?: number) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n || 0);
@@ -39,8 +45,18 @@ const formatDate = (v?: string) =>
 
 export function OrderHistory({ orders, loading, onSelectOrder }: Props) {
   const sorted = [...orders].sort(
-    (a, b) => new Date(b.bookingTime || "").getTime() - new Date(a.bookingTime || "").getTime()
+    (a, b) => new Date(b.bookingTime).getTime() - new Date(a.bookingTime).getTime()
   );
+
+  const handleRepayment = async (orderId: number) => {
+    try {
+      const token = localStorage.getItem("token") ?? "";
+      const url   = await createVnpayRepaymentUrl(token, String(orderId));
+      window.location.href = url;
+    } catch {
+      toast.error("Không thể kết nối đến máy chủ thanh toán. Vui lòng thử lại.");
+    }
+  };
 
   return (
     <div className="bg-card border border-border rounded-xl shadow-sm">
@@ -83,48 +99,94 @@ export function OrderHistory({ orders, loading, onSelectOrder }: Props) {
             <p className="text-sm text-muted-foreground">Bạn chưa có đơn hàng nào.</p>
           </div>
         ) : (
-          <div className="space-y-2.5 max-h-[600px] overflow-y-auto pr-0.5">
-            {sorted.map((order) => {
-              const status     = getStatus(order.orderStatus || "");
-              const shortId    = String(order.orderId ?? "").slice(0, 8).toUpperCase();
-              const ticketCount = order.tickets?.length ?? 0;
+          /* ── Table-style header + rows ── */
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left">
+                  <th className="pb-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Mã đơn</th>
+                  <th className="pb-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Hoạt động</th>
+                  <th className="pb-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider hidden sm:table-cell">Chi nhánh</th>
+                  <th className="pb-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Ngày</th>
+                  <th className="pb-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider text-right">Tổng cộng</th>
+                  <th className="pb-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider text-right hidden md:table-cell">Điểm</th>
+                  <th className="pb-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider text-center">Trạng thái</th>
+                  <th className="pb-3"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {sorted.map((order) => {
+                  const status      = getStatus(order.orderStatus || "");
+                  const shortId     = String(order.orderId ?? "").slice(0, 8).toUpperCase();
+                  const ticketCount = order.tickets?.length ?? 0;
 
-              return (
-                <div
-                  key={String(order.orderId)}
-                  className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 border border-border rounded-xl hover:bg-secondary/30 transition-colors"
-                >
-                  {/* Left: id + status + date */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="text-sm font-bold text-foreground font-mono">#{shortId}</span>
-                      <Badge className={`text-xs font-semibold px-2 py-0.5 rounded-full ${status.className}`}>
-                        {status.label}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-                      <span>{formatDate(order.bookingTime)}</span>
-                      {ticketCount > 0 && <span>{ticketCount} vé</span>}
-                    </div>
-                  </div>
-
-                  {/* Price */}
-                  <p className="text-base font-black text-foreground tabular-nums sm:text-right shrink-0">
-                    {formatCurrency(order.finalPrice)}
-                  </p>
-
-                  {/* Action */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onSelectOrder(order)}
-                    className="cursor-pointer text-primary hover:text-primary hover:bg-primary/10 rounded-lg font-semibold text-xs shrink-0"
-                  >
-                    Xem chi tiết
-                  </Button>
-                </div>
-              );
-            })}
+                  return (
+                    <tr
+                      key={String(order.orderId)}
+                      className="hover:bg-secondary/30 transition-colors"
+                    >
+                      <td className="py-3.5 pr-3">
+                        <span className="font-bold text-foreground font-mono text-xs">#{shortId}</span>
+                      </td>
+                      <td className="py-3.5 pr-3">
+                        <div className="min-w-0">
+                          <p className="text-foreground font-medium truncate max-w-[180px]">
+                            {order.movieTitle || `Đặt vé (${ticketCount} vé)`}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="py-3.5 pr-3 hidden sm:table-cell">
+                        <span className="text-muted-foreground text-xs truncate max-w-[140px] block">
+                          {order.cinemaName || "---"}
+                        </span>
+                      </td>
+                      <td className="py-3.5 pr-3">
+                        <span className="text-muted-foreground text-xs whitespace-nowrap">
+                          {formatDate(order.bookingTime)}
+                        </span>
+                      </td>
+                      <td className="py-3.5 pr-3 text-right">
+                        <span className="font-bold text-foreground tabular-nums text-xs whitespace-nowrap">
+                          {formatCurrency(order.finalPrice)}
+                        </span>
+                      </td>
+                      <td className="py-3.5 pr-3 text-right hidden md:table-cell">
+                        <span className="text-primary font-semibold text-xs tabular-nums">
+                          +{(order.pointsEarned ?? 0).toLocaleString("vi-VN")}
+                        </span>
+                      </td>
+                      <td className="py-3.5 pr-3 text-center">
+                          <Badge variant={status.variant} className="text-xs font-semibold px-2 py-0.5 rounded-full">
+                              {status.label}
+                          </Badge>
+                      </td>
+                      <td className="py-3.5 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          {order.orderStatus === "PENDING" && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRepayment(order.orderId)}
+                              className="cursor-pointer text-yellow-700 hover:text-yellow-800 hover:bg-yellow-500/10 dark:text-yellow-400 dark:hover:text-yellow-300 rounded-lg font-semibold text-xs shrink-0"
+                            >
+                              Thanh toán
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onSelectOrder(order)}
+                            className="cursor-pointer text-primary hover:text-primary hover:bg-primary/10 rounded-lg font-semibold text-xs shrink-0"
+                          >
+                            Chi tiết
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

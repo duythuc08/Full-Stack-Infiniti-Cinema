@@ -7,6 +7,7 @@ import { ProfileSidebar } from "./components/ProfileSidebar";
 import { PersonalInfo } from "./components/PersonalInfo";
 import { OrderHistory } from "./components/OrderHistory";
 import { OrderDetailDialog } from "./components/OrderDetailDialog";
+import { OverviewWidgets } from "./components/OverviewWidgets";
 import {
   fetchMyInfo,
   updateMyInfo,
@@ -65,12 +66,12 @@ export default function ProfilePage() {
           birthday:    info.birthday    || "",
         });
         localStorage.setItem("user", JSON.stringify({
-          userId:              info.userId,
-          username:            info.username,
-          firstname:           info.firstname,
-          lastname:            info.lastname,
-          birthday:            info.birthday,
-          memberShipTierName:  info.membetShipTierName || info.memberShipTierName,
+          userId:             info.userId,
+          username:           info.username,
+          firstname:          info.firstname,
+          lastname:           info.lastname,
+          birthday:           info.birthday,
+          memberShipTierName: info.memberShipTierName,
         }));
       } catch (e) {
         const err = e as Error;
@@ -118,7 +119,7 @@ export default function ProfilePage() {
     try {
       const token = localStorage.getItem("token");
       if (!token) { router.push("/login"); return; }
-      await updateMyInfo(token, { ...userInfo, ...form });
+      await updateMyInfo(token, form);
       setUserInfo((p) => (p ? { ...p, ...form } : p));
       toast.success("Cập nhật thông tin thành công!");
     } catch {
@@ -136,7 +137,7 @@ export default function ProfilePage() {
 
   /* ════════════════════════ RENDER ════════════════════════ */
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950/50 pt-20">
+    <div className="min-h-screen bg-muted/40 pt-20">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
         <div className="grid grid-cols-1 md:grid-cols-[250px_1fr] gap-8 items-start">
 
@@ -149,6 +150,14 @@ export default function ProfilePage() {
           />
 
           <main className="min-w-0">
+            <OverviewWidgets
+              userInfo={userInfo}
+              allTiers={allTiers}
+              orders={orders}
+              loadingInfo={loadingInfo}
+              loadingOrders={loadingOrders}
+            />
+
             {activeTab === "info" ? (
               <PersonalInfo
                 userInfo={userInfo}

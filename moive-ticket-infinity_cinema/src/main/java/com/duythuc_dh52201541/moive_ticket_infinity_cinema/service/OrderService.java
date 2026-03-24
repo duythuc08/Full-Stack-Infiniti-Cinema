@@ -4,6 +4,9 @@ import com.duythuc_dh52201541.moive_ticket_infinity_cinema.dto.respone.OrderFood
 import com.duythuc_dh52201541.moive_ticket_infinity_cinema.dto.respone.OrderResponse;
 import com.duythuc_dh52201541.moive_ticket_infinity_cinema.dto.respone.OrderTicketResponse;
 import com.duythuc_dh52201541.moive_ticket_infinity_cinema.entity.*;
+import com.duythuc_dh52201541.moive_ticket_infinity_cinema.entity.ShowTimes;
+import com.duythuc_dh52201541.moive_ticket_infinity_cinema.entity.Rooms;
+import com.duythuc_dh52201541.moive_ticket_infinity_cinema.entity.Cinemas;
 import com.duythuc_dh52201541.moive_ticket_infinity_cinema.exception.AppException;
 import com.duythuc_dh52201541.moive_ticket_infinity_cinema.exception.ErrorCode;
 import com.duythuc_dh52201541.moive_ticket_infinity_cinema.mapper.OrderMapper;
@@ -40,17 +43,26 @@ public class OrderService {
                 fullName = order.getUsers().getFirstname() + " " + order.getUsers().getLastname();
             }
 
-            // 3. Map danh sách vé (Giữ nguyên logic của bạn)
+            // 3. Map danh sách vé
             List<OrderTicketResponse> ticketResponses = new ArrayList<>();
             if (order.getOrderTickets() != null) {
                 for (OrderTickets ticket : order.getOrderTickets()) {
                     if (ticket.getSeatShowTime() != null && ticket.getSeatShowTime().getSeats() != null) {
                         Seats seat = ticket.getSeatShowTime().getSeats();
+                        ShowTimes st = ticket.getSeatShowTime().getShowTimes();
+
+                        String ticketRoomName   = (st != null && st.getRooms() != null)    ? st.getRooms().getName()           : null;
+                        String ticketMovieName  = (st != null && st.getMovies() != null)   ? st.getMovies().getTitle()         : null;
+                        String ticketShowTime   = (st != null && st.getStartTime() != null) ? st.getStartTime().toString()     : null;
+
                         ticketResponses.add(OrderTicketResponse.builder()
                                 .orderTicketId(ticket.getOrderTicketId())
                                 .seatName(seat.getSeatRow() + seat.getSeatNumber())
                                 .seatType(seat.getSeatType())
                                 .price(ticket.getPrice())
+                                .roomName(ticketRoomName)
+                                .movieName(ticketMovieName)
+                                .showTime(ticketShowTime)
                                 .build());
                     }
                 }
@@ -70,20 +82,43 @@ public class OrderService {
                 }
             }
 
-            // 5. Build Response - BỔ SUNG CÁC TRƯỜNG ƯU ĐÃI
+            // 5. Trích xuất thông tin phim / rạp / phòng chiếu từ vé đầu tiên
+            String movieTitle = null;
+            String cinemaName = null;
+            String cinemaAddress = null;
+            String showTimeStr = null;
+            String roomName = null;
+
+            if (order.getOrderTickets() != null && !order.getOrderTickets().isEmpty()) {
+                OrderTickets firstTicket = order.getOrderTickets().iterator().next();
+                if (firstTicket.getSeatShowTime() != null) {
+                    ShowTimes st = firstTicket.getSeatShowTime().getShowTimes();
+                    if (st != null) {
+                        if (st.getMovies() != null) movieTitle = st.getMovies().getTitle();
+                        if (st.getStartTime() != null) showTimeStr = st.getStartTime().toString();
+                        Rooms room = st.getRooms();
+                        if (room != null) {
+                            roomName = room.getName();
+                            Cinemas cinema = room.getCinemas();
+                            if (cinema != null) {
+                                cinemaName = cinema.getName();
+                                cinemaAddress = cinema.getAddress();
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 6. Build Response
             return OrderResponse.builder()
                     .orderId(order.getOrderId())
                     .userId(userId)
                     .fullName(fullName)
                     .totalTicketPrice(order.getTotalTicketPrice())
                     .totalFoodPrice(order.getTotalFoodPrice())
-
-                    // ========== CÁC TRƯỜNG MỚI CẦN HIỂN THỊ ==========
-                    .memberDiscountAmount(order.getMemberDiscountAmount()) // Giảm giá hạng thẻ
-                    .discountAmount(order.getDiscountAmount())             // Giảm giá từ mã Promotion
-                    .pointsEarned(order.getPointsEarned())                 // Điểm tích lũy được
-                    // =================================================
-
+                    .memberDiscountAmount(order.getMemberDiscountAmount())
+                    .discountAmount(order.getDiscountAmount())
+                    .pointsEarned(order.getPointsEarned())
                     .finalPrice(order.getFinalPrice())
                     .promotionCode(order.getPromotionCode())
                     .orderStatus(order.getOrderStatus())
@@ -94,6 +129,11 @@ public class OrderService {
                     .qrCode(order.getQrCode())
                     .tickets(ticketResponses)
                     .foods(foodResponses)
+                    .movieTitle(movieTitle)
+                    .cinemaName(cinemaName)
+                    .cinemaAddress(cinemaAddress)
+                    .showTime(showTimeStr)
+                    .roomName(roomName)
                     .build();
 
         } catch (AppException e) {
