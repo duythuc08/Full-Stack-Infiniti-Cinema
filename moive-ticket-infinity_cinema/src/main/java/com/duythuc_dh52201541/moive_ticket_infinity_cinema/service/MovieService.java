@@ -17,6 +17,10 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import com.duythuc_dh52201541.moive_ticket_infinity_cinema.dto.respone.PagedMovieResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -103,6 +107,54 @@ public class MovieService {
                 .stream()
                 .map(movieMapper::toMovieResponse)
                 .toList();
+    }
+
+    // ─── Paginated variants (hỗ trợ ?page=0&size=4 từ FE) ─────
+    public List<MovieResponse> getMoviesShowingPaged(int page, int size) {
+        return movieRepository.findByMovieStatus(
+                MovieStatus.NOW_SHOWING,
+                PageRequest.of(page, size, Sort.by("movieId").descending()))
+                .getContent().stream().map(movieMapper::toMovieResponse).toList();
+    }
+
+    public List<MovieResponse> getMoviesComingSoonPaged(int page, int size) {
+        return movieRepository.findByMovieStatus(
+                MovieStatus.COMING_SOON,
+                PageRequest.of(page, size, Sort.by("movieId").descending()))
+                .getContent().stream().map(movieMapper::toMovieResponse).toList();
+    }
+
+    public List<MovieResponse> getMoviesImaxPaged(int page, int size) {
+        return movieRepository.findByMovieStatus(
+                MovieStatus.IMAX,
+                PageRequest.of(page, size, Sort.by("movieId").descending()))
+                .getContent().stream().map(movieMapper::toMovieResponse).toList();
+    }
+
+    // ─── PagedMovieResponse variants (trả về metadata để FE biết totalPages) ───
+
+    private PagedMovieResponse buildPagedResponse(MovieStatus status, int page, int size) {
+        Page<Movies> result = movieRepository.findByMovieStatus(
+                status, PageRequest.of(page, size, Sort.by("movieId").descending()));
+        return PagedMovieResponse.builder()
+                .content(result.getContent().stream().map(movieMapper::toMovieResponse).toList())
+                .currentPage(page)
+                .pageSize(size)
+                .totalPages(result.getTotalPages())
+                .totalElements(result.getTotalElements())
+                .build();
+    }
+
+    public PagedMovieResponse getShowingMoviesPagedResponse(int page, int size) {
+        return buildPagedResponse(MovieStatus.NOW_SHOWING, page, size);
+    }
+
+    public PagedMovieResponse getComingSoonMoviesPagedResponse(int page, int size) {
+        return buildPagedResponse(MovieStatus.COMING_SOON, page, size);
+    }
+
+    public PagedMovieResponse getImaxMoviesPagedResponse(int page, int size) {
+        return buildPagedResponse(MovieStatus.IMAX, page, size);
     }
 
 }

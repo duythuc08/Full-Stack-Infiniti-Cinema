@@ -125,6 +125,13 @@
     html {
         scroll-behavior: smooth;
     }
+    /* Fix native <select> option colors — browser uses color-scheme to style options */
+    select {
+        color-scheme: light;
+    }
+    .dark select {
+        color-scheme: dark;
+    }
 }
 
 @layer utilities {

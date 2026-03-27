@@ -57,6 +57,41 @@ export async function getMovieById(id: string) {
   };
 }
 
+// ─── Movies (Paginated — SSR initial load) ────────────────
+async function apiFetchPaged(path: string) {
+  const res = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`API error ${res.status}: ${path}`);
+  const data = await res.json();
+  const r = data.result as Record<string, unknown>;
+  return {
+    movies: ((r.content ?? []) as unknown[]).map(mapMovie),
+    currentPage: r.currentPage as number,
+    pageSize: r.pageSize as number,
+    totalPages: r.totalPages as number,
+    totalElements: r.totalElements as number,
+  };
+}
+
+export async function getShowingMoviesPaged(page = 0, size = 4) {
+  return apiFetchPaged(`/movies/showing/paged?page=${page}&size=${size}`);
+}
+export async function getComingSoonMoviesPaged(page = 0, size = 4) {
+  return apiFetchPaged(`/movies/comingSoon/paged?page=${page}&size=${size}`);
+}
+export async function getImaxMoviesPaged(page = 0, size = 4) {
+  return apiFetchPaged(`/movies/imax/paged?page=${page}&size=${size}`);
+}
+
+// ─── Cinemas ──────────────────────────────────────────────
+export async function getCinemas() {
+  const data = await apiFetch<{ result: unknown[] }>("/cinemas/getCinemas");
+  return ((data.result ?? []) as Record<string, unknown>[]).map((c) => ({
+    id: c.cinemaId as number,
+    name: c.name as string,
+    address: c.address as string,
+  }));
+}
+
 // ─── Banners ──────────────────────────────────────────────
 export async function getBanners() {
   const data = await apiFetch<{ result: unknown[] }>("/banners/getBanners");

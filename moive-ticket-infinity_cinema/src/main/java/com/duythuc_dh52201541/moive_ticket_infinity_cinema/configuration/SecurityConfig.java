@@ -51,6 +51,16 @@ public class SecurityConfig {
             "/showtimes/getShowTimes/**",
             "/showtimes/getShowTimes/by-cinema/**",
             "/showtimes/getShowTimes/active/by-movie/**",
+            // Quick Booking Bar endpoints — phải public (FE gọi không có token)
+            "/showtimes/movies-by-cinema/**",
+            "/showtimes/cinemas-by-movie/**",
+            "/showtimes/now-showing-movies",
+            "/showtimes/dates",
+            "/showtimes/slots",
+            // Movie pagination endpoints
+            "/movies/showing/paged",
+            "/movies/comingSoon/paged",
+            "/movies/imax/paged",
             "/payment/vnpay-callback",
 
 

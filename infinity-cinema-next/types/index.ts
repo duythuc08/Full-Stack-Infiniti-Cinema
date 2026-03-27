@@ -183,6 +183,34 @@ export interface Order {
   roomName: string | null;
 }
 
+// ─── Pagination ────────────────────────────────────────────
+export interface PagedMovieResult {
+  movies: Movie[];
+  currentPage: number;
+  pageSize: number;
+  totalPages: number;
+  totalElements: number;
+}
+
+// ─── Quick Booking ─────────────────────────────────────────
+export interface Cinema {
+  id: number;
+  name: string;
+  address: string;
+}
+
+export interface QuickBookingSlot {
+  showTimeId: number;
+  startTime: string;
+  roomName: string;
+  roomType: string;
+}
+
+export interface BookingDate {
+  value: string;  // "YYYY-MM-DD"
+  label: string;  // "Hôm nay (27/03)" | "Thứ 7 (28/03)"
+}
+
 // ─── User ─────────────────────────────────────────────────
 export interface UserInfo {
   userId: string;

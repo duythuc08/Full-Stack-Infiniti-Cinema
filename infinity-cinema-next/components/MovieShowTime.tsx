@@ -17,6 +17,31 @@ interface ShowtimesProps {
   }) => void;
 }
 
+/** Kiểm tra ngày có phải hôm nay không */
+function isToday(date: Date): boolean {
+  const today = new Date();
+  return (
+    date.getFullYear() === today.getFullYear() &&
+    date.getMonth() === today.getMonth() &&
+    date.getDate() === today.getDate()
+  );
+}
+
+/** Lọc bỏ suất chiếu đã qua nếu đang xem lịch ngày hôm nay.
+ *  `time` có dạng "HH:mm" (24h). */
+function filterValidTimes(
+  times: { id: number; time: string; roomName: string }[],
+  isCurrentDay: boolean
+): { id: number; time: string; roomName: string }[] {
+  if (!isCurrentDay) return times;
+  const now = new Date();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  return times.filter((t) => {
+    const [h, m] = t.time.split(":").map(Number);
+    return h * 60 + m > nowMinutes;
+  });
+}
+
 export function Showtimes({ data, days, selectedDate, onSelectDate, onSelect }: ShowtimesProps) {
   const handleSelectTime = (
     cinema: { name: string; location: string },
@@ -31,6 +56,20 @@ export function Showtimes({ data, days, selectedDate, onSelectDate, onSelect }: 
       roomName: timeObj.roomName,
     });
   };
+
+  // Xác định tab đang chọn có phải hôm nay không
+  const selectedDay = days[selectedDate];
+  const currentDaySelected = selectedDay ? isToday(selectedDay.date) : false;
+
+  // Lọc và chỉ giữ rạp còn suất hợp lệ
+  const filteredCinemas = (data?.cinemas ?? [])
+    .map((cinema) => ({
+      ...cinema,
+      times: filterValidTimes(cinema.times, currentDaySelected),
+    }))
+    .filter((cinema) => cinema.times.length > 0);
+
+  const hasShowtimes = filteredCinemas.length > 0;
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-12 max-w-[1920px] mx-auto bg-background">
@@ -60,17 +99,19 @@ export function Showtimes({ data, days, selectedDate, onSelectDate, onSelect }: 
       </div>
 
       {/* Showtimes grid */}
-      {!data || !data.cinemas || data.cinemas.length === 0 ? (
+      {!hasShowtimes ? (
         <div className="text-center py-16 border border-dashed rounded-2xl border-border bg-secondary/20">
           <p className="text-muted-foreground text-base">
             {days.length === 0
               ? "Hiện chưa có lịch chiếu cho phim này."
-              : `Chưa có suất chiếu cho ngày ${days[selectedDate]?.label ?? ""}.`}
+              : currentDaySelected
+              ? "Các suất chiếu trong ngày hôm nay đã kết thúc."
+              : `Chưa có suất chiếu cho ngày ${selectedDay?.label ?? ""}.`}
           </p>
         </div>
       ) : (
         <div className="space-y-4">
-          {data.cinemas.map((cinema, cIndex) => (
+          {filteredCinemas.map((cinema, cIndex) => (
             <div
               key={cIndex}
               className="bg-card border border-border rounded-2xl p-6 hover:shadow-xl hover:shadow-black/20 hover:-translate-y-0.5 transition-all duration-300"

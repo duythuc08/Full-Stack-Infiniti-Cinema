@@ -41,15 +41,15 @@ export default function MovieDetailsPage() {
       .catch((err) => console.error("Error fetching movie:", err));
   }, [id]);
 
-  // Fetch available showtime dates
+  // Fetch available showtime dates (6 ngày từ hôm nay, không cần movieId)
   useEffect(() => {
-    fetchShowtimeDates(id)
+    fetchShowtimeDates()
       .then((dates) => {
         setAvailableDates(dates);
         setSelectedDateIndex(0);
       })
       .catch((err) => console.error("Error finding start date:", err));
-  }, [id]);
+  }, []);
 
   // Fetch showtimes for selected date
   useEffect(() => {

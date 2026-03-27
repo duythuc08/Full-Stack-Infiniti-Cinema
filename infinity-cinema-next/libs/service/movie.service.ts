@@ -2,9 +2,60 @@
  * Client-side movie API functions (dùng trong Client Components với useEffect).
  * Phân biệt với serverApi.ts dùng trong Server Components.
  */
-import type { MovieDetail, ShowtimeDate, ShowtimeData } from "@/types";
+import type { Movie, MovieDetail, PagedMovieResult, ShowtimeDate, ShowtimeData } from "@/types";
 
 const BASE_URL = "/api-proxy";
+
+// ─── Pagination (client-side — dùng khi carousel chuyển trang) ──────────────
+
+// Phải khớp với URL path của backend: /movies/showing, /movies/comingSoon, /movies/imax
+type MovieStatusKey = "showing" | "comingSoon" | "imax";
+
+function mapMovieFromRaw(m: Record<string, unknown>): Movie {
+  return {
+    id: m.movieId as number,
+    title: m.title as string,
+    synopsis: m.description as string,
+    duration: m.duration as number,
+    durationText: `${m.duration} phút`,
+    poster: m.posterUrl as string,
+    trailer: m.trailerUrl as string,
+    releaseDate: m.releaseDate as string,
+    cast: ((m.castPersons as Array<{ name: string }>) ?? []).map((p) => p.name),
+    director:
+      ((m.directors as Array<{ name: string }>) ?? []).length > 0
+        ? (m.directors as Array<{ name: string }>)[0].name
+        : null,
+    language: m.language as string,
+    subTitle: m.subTitle as string,
+    genres: ((m.genre as Array<{ name: string }>) ?? []).map((g) => g.name),
+    genreDescriptions: ((m.genre as Array<{ description: string }>) ?? []).map((g) => g.description),
+    ageRating: m.ageRating as string,
+    status: m.movieStatus as string,
+  };
+}
+
+export async function fetchMoviesPaged(
+  status: MovieStatusKey,
+  page: number,
+  size = 4
+): Promise<PagedMovieResult> {
+  const res = await fetch(`${BASE_URL}/movies/${status}/paged?page=${page}&size=${size}`);
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    console.error(`[fetchMoviesPaged] HTTP ${res.status} — status=${status} page=${page}`, body);
+    throw new Error(`Lỗi tải danh sách phim (${res.status})`);
+  }
+  const data = await res.json();
+  const r = data.result as Record<string, unknown>;
+  return {
+    movies: ((r.content ?? []) as Record<string, unknown>[]).map(mapMovieFromRaw),
+    currentPage: r.currentPage as number,
+    pageSize: r.pageSize as number,
+    totalPages: r.totalPages as number,
+    totalElements: r.totalElements as number,
+  };
+}
 
 export async function fetchMovieBanner(movieId: string): Promise<string> {
   try {
@@ -45,28 +96,26 @@ export async function fetchMovieDetail(movieId: string): Promise<MovieDetail> {
   };
 }
 
-export async function fetchShowtimeDates(movieId: string): Promise<ShowtimeDate[]> {
-  try {
-    const res = await fetch(`${BASE_URL}/showtimes/getShowTimes/by-movie/${movieId}`);
-    const data = await res.json();
-    if (data.code !== 0 || !data.result || data.result.length === 0) return [];
+const WEEKDAY_LABELS = ["Chủ Nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
 
-    const sorted = (data.result as Array<{ startTime: string }>).sort(
-      (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
-    );
-    const firstDate = new Date(sorted[0].startTime);
-
-    return Array.from({ length: 3 }, (_, i) => {
-      const date = new Date(firstDate);
-      date.setDate(firstDate.getDate() + i);
-      const weekday = date.toLocaleDateString("vi-VN", { weekday: "short" });
-      const day = String(date.getDate()).padStart(2, "0");
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      return { date, label: `${weekday}, ${day}/${month}` };
-    });
-  } catch {
-    return [];
-  }
+/**
+ * Sinh 6 ngày liên tiếp từ hôm nay.
+ * Ngày đầu: "Hôm nay (DD/MM)" — các ngày tiếp: "Thứ X (DD/MM)".
+ * Không gọi API — hoàn toàn client-side.
+ */
+export async function fetchShowtimeDates(): Promise<ShowtimeDate[]> {
+  const today = new Date();
+  return Array.from({ length: 6 }, (_, i) => {
+    const date = new Date(today);
+    date.setDate(today.getDate() + i);
+    const dd = String(date.getDate()).padStart(2, "0");
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const label =
+      i === 0
+        ? `Hôm nay (${dd}/${mm})`
+        : `${WEEKDAY_LABELS[date.getDay()]} (${dd}/${mm})`;
+    return { date, label };
+  });
 }
 
 export async function fetchShowtimesByDate(

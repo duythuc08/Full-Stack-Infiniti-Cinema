@@ -1,13 +1,19 @@
 package com.duythuc_dh52201541.moive_ticket_infinity_cinema.service;
 
 import com.duythuc_dh52201541.moive_ticket_infinity_cinema.dto.request.ShowTimeRequest;
+import com.duythuc_dh52201541.moive_ticket_infinity_cinema.dto.respone.CinemaResponse;
+import com.duythuc_dh52201541.moive_ticket_infinity_cinema.dto.respone.MovieResponse;
+import com.duythuc_dh52201541.moive_ticket_infinity_cinema.dto.respone.QuickBookingSlotResponse;
 import com.duythuc_dh52201541.moive_ticket_infinity_cinema.dto.respone.ShowTimeResponse;
 import com.duythuc_dh52201541.moive_ticket_infinity_cinema.entity.Movies;
 import com.duythuc_dh52201541.moive_ticket_infinity_cinema.entity.Rooms;
 import com.duythuc_dh52201541.moive_ticket_infinity_cinema.entity.ShowTimes;
+import com.duythuc_dh52201541.moive_ticket_infinity_cinema.enums.MovieStatus;
 import com.duythuc_dh52201541.moive_ticket_infinity_cinema.enums.ShowTimeStatus;
 import com.duythuc_dh52201541.moive_ticket_infinity_cinema.exception.AppException;
 import com.duythuc_dh52201541.moive_ticket_infinity_cinema.exception.ErrorCode;
+import com.duythuc_dh52201541.moive_ticket_infinity_cinema.mapper.CinemaMapper;
+import com.duythuc_dh52201541.moive_ticket_infinity_cinema.mapper.MovieMapper;
 import com.duythuc_dh52201541.moive_ticket_infinity_cinema.mapper.ShowTimeMapper;
 import com.duythuc_dh52201541.moive_ticket_infinity_cinema.repository.MovieRepository;
 import com.duythuc_dh52201541.moive_ticket_infinity_cinema.repository.RoomRepository;
@@ -21,7 +27,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 
@@ -32,6 +40,8 @@ import java.util.List;
 public class ShowTimeService {
     ShowTimeRepository showTimeRepository;
     ShowTimeMapper showTimeMapper;
+    MovieMapper movieMapper;
+    CinemaMapper cinemaMapper;
     // Cần thêm 2 Repository này để tìm kiếm
     private final MovieRepository movieRepository;
     private final RoomRepository roomRepository;
@@ -122,6 +132,69 @@ public class ShowTimeService {
         return  showTimeRepository.findByMovies_MovieId(movieId)
                 .stream()
                 .map(showTimeMapper::toShowTimeResponse)
+                .toList();
+    }
+
+    // ─── Quick Booking Bar APIs ─────────────────────────────
+
+    // 5. Lấy danh sách phim đang có suất chiếu tại một rạp
+    public List<MovieResponse> getMoviesByCinema(Long cinemaId) {
+        LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
+        // Hiển thị phim NOW_SHOWING/IMAX tại rạp (bất kể thời gian suất chiếu)
+        // HOẶC phim có suất chiếu từ đầu ngày hôm nay trở đi
+        List<MovieStatus> activeStatuses = List.of(MovieStatus.NOW_SHOWING, MovieStatus.IMAX);
+        return showTimeRepository.findDistinctMoviesByCinemaId(cinemaId, startOfToday, activeStatuses)
+                .stream()
+                .map(movieMapper::toMovieResponse)
+                .toList();
+    }
+
+    // 6. Lấy danh sách ngày chiếu khả dụng theo rạp + phim
+    public List<String> getAvailableDatesByCinemaAndMovie(Long cinemaId, Long movieId) {
+        // Dùng đầu ngày hôm nay để bao gồm ngày hôm nay kể cả khi một số suất đã qua
+        LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
+        return showTimeRepository.findByCinemaIdAndMovieIdAfterNow(cinemaId, movieId, startOfToday)
+                .stream()
+                .map(st -> st.getStartTime().toLocalDate().toString())
+                .distinct()
+                .sorted()
+                .toList();
+    }
+
+    // 7. Lấy danh sách suất chiếu theo rạp + phim + ngày
+    // Nếu date = hôm nay, dùng giờ hiện tại làm startOfDay để lọc bỏ suất đã qua
+    public List<QuickBookingSlotResponse> getShowtimeSlotsByCinemaMovieDate(Long cinemaId, Long movieId, LocalDate date) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfDay = date.equals(LocalDate.now()) ? now : date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(23, 59, 59);
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+        return showTimeRepository.findByCinemaIdAndMovieIdOnDate(cinemaId, movieId, startOfDay, endOfDay)
+                .stream()
+                .map(st -> QuickBookingSlotResponse.builder()
+                        .showTimeId(st.getShowTimeId())
+                        .startTime(st.getStartTime().format(timeFormatter))
+                        .roomName(st.getRooms() != null ? st.getRooms().getName() : "")
+                        .roomType(st.getRooms() != null ? st.getRooms().getRoomType().name() : "")
+                        .build())
+                .toList();
+    }
+
+    // 8. Phim NOW_SHOWING/IMAX còn ít nhất 1 suất chưa qua — dùng cho dropdown "Chọn Phim" Quick Booking
+    public List<MovieResponse> getNowShowingMoviesForQuickBooking() {
+        LocalDateTime now = LocalDateTime.now();
+        List<MovieStatus> activeStatuses = List.of(MovieStatus.NOW_SHOWING, MovieStatus.IMAX);
+        return showTimeRepository.findNowShowingMoviesWithUpcomingSlots(now, activeStatuses)
+                .stream()
+                .map(movieMapper::toMovieResponse)
+                .toList();
+    }
+
+    // 9. Lấy danh sách rạp đang có suất chiếu cho một phim (Movie-first cascade)
+    public List<CinemaResponse> getCinemasByMovie(Long movieId) {
+        LocalDateTime now = LocalDateTime.now();
+        return showTimeRepository.findDistinctCinemasByMovieId(movieId, now)
+                .stream()
+                .map(cinemaMapper::toCinemasResponse)
                 .toList();
     }
 }

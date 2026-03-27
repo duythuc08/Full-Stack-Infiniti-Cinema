@@ -1,6 +1,8 @@
 package com.duythuc_dh52201541.moive_ticket_infinity_cinema.repository;
 
+import com.duythuc_dh52201541.moive_ticket_infinity_cinema.entity.Movies;
 import com.duythuc_dh52201541.moive_ticket_infinity_cinema.entity.ShowTimes;
+import com.duythuc_dh52201541.moive_ticket_infinity_cinema.enums.MovieStatus;
 import com.duythuc_dh52201541.moive_ticket_infinity_cinema.enums.ShowTimeStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -61,4 +63,64 @@ public interface ShowTimeRepository extends JpaRepository<ShowTimes, String> {
     List<ShowTimes> findByMovies_MovieId(Long movieId);
 
     boolean existsByShowTimeId(Long showTimeId);
+
+    // Quick Booking Bar: lấy danh sách phim tại rạp
+    // Hiển thị phim có status NOW_SHOWING/IMAX (bất kể thời gian suất chiếu)
+    // HOẶC phim có suất chiếu từ đầu ngày hôm nay trở đi
+    @Query("SELECT DISTINCT s.movies FROM ShowTimes s " +
+            "JOIN s.rooms r JOIN r.cinemas c " +
+            "WHERE c.cinemaId = :cinemaId " +
+            "AND s.showTimeStatus != 'CANCELLED' " +
+            "AND (s.movies.movieStatus IN :activeStatuses OR s.startTime >= :startOfToday)")
+    List<Movies> findDistinctMoviesByCinemaId(
+            @Param("cinemaId") Long cinemaId,
+            @Param("startOfToday") LocalDateTime startOfToday,
+            @Param("activeStatuses") List<MovieStatus> activeStatuses);
+
+    // Quick Booking Bar: lấy các suất chiếu từ đầu ngày hôm nay của một phim tại rạp
+    @Query("SELECT s FROM ShowTimes s " +
+            "JOIN s.rooms r JOIN r.cinemas c " +
+            "WHERE c.cinemaId = :cinemaId " +
+            "AND s.movies.movieId = :movieId " +
+            "AND s.startTime >= :startOfToday " +
+            "AND s.showTimeStatus != 'CANCELLED' " +
+            "ORDER BY s.startTime ASC")
+    List<ShowTimes> findByCinemaIdAndMovieIdAfterNow(
+            @Param("cinemaId") Long cinemaId,
+            @Param("movieId") Long movieId,
+            @Param("startOfToday") LocalDateTime startOfToday);
+
+    // Quick Booking Bar: lấy suất chiếu theo rạp + phim + khoảng ngày
+    @Query("SELECT s FROM ShowTimes s " +
+            "JOIN s.rooms r JOIN r.cinemas c " +
+            "WHERE c.cinemaId = :cinemaId " +
+            "AND s.movies.movieId = :movieId " +
+            "AND s.startTime >= :startOfDay " +
+            "AND s.startTime <= :endOfDay " +
+            "AND s.showTimeStatus != 'CANCELLED' " +
+            "ORDER BY s.startTime ASC")
+    List<ShowTimes> findByCinemaIdAndMovieIdOnDate(
+            @Param("cinemaId") Long cinemaId,
+            @Param("movieId") Long movieId,
+            @Param("startOfDay") LocalDateTime startOfDay,
+            @Param("endOfDay") LocalDateTime endOfDay);
+
+    // Quick Booking Bar: phim NOW_SHOWING/IMAX còn ít nhất 1 suất chưa qua (dùng cho dropdown Chọn Phim)
+    @Query("SELECT DISTINCT s.movies FROM ShowTimes s " +
+            "WHERE s.showTimeStatus != 'CANCELLED' " +
+            "AND s.startTime >= :now " +
+            "AND s.movies.movieStatus IN :activeStatuses")
+    List<Movies> findNowShowingMoviesWithUpcomingSlots(
+            @Param("now") LocalDateTime now,
+            @Param("activeStatuses") List<MovieStatus> activeStatuses);
+
+    // Quick Booking Bar (Movie-first): lấy danh sách rạp có suất chiếu cho một phim NOW_SHOWING
+    @Query("SELECT DISTINCT r.cinemas FROM ShowTimes s " +
+            "JOIN s.rooms r JOIN r.cinemas c " +
+            "WHERE s.movies.movieId = :movieId " +
+            "AND s.showTimeStatus != 'CANCELLED' " +
+            "AND s.startTime >= :now")
+    List<com.duythuc_dh52201541.moive_ticket_infinity_cinema.entity.Cinemas> findDistinctCinemasByMovieId(
+            @Param("movieId") Long movieId,
+            @Param("now") LocalDateTime now);
 }
