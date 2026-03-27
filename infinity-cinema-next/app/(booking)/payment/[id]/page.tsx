@@ -2,13 +2,13 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
 import { getBookingState, clearBookingState } from "@/utils/bookingStorage";
 import { createVnpayBooking } from "@/libs/service/booking.service";
 import { fetchMembershipTierByName } from "@/libs/service/user.service";
+import { useBookingTimer } from "@/hooks/use-booking-timer";
 import type { MembershipTier } from "@/types";
 
 export default function PaymentPage() {
@@ -18,8 +18,8 @@ export default function PaymentPage() {
   const bookingInfo = getBookingState();
 
   const [paymentMethod, setPaymentMethod] = useState("MOMO");
-  const [timeLeft, setTimeLeft] = useState(300);
   const [loading, setLoading] = useState(false);
+  const { minutes, seconds, isUrgent, clearTimer } = useBookingTimer();
   const [membershipData, setMembershipData] = useState<MembershipTier | null>(null);
   const [isTierLoading, setIsTierLoading] = useState(true);
 
@@ -88,29 +88,6 @@ export default function PaymentPage() {
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
 
-  // Countdown – dùng [] để tránh restart interval khi router reference thay đổi
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          toast.error("Hết thời gian giữ ghế! Vui lòng đặt vé lại.", { duration: 5000 });
-          router.push("/");
-          return 0;
-        }
-        if (prev === 60) {
-          toast.warning("Còn 1 phút để hoàn tất thanh toán!", { duration: 3000 });
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const minutes = String(Math.floor(timeLeft / 60)).padStart(2, "0");
-  const seconds = String(timeLeft % 60).padStart(2, "0");
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -149,6 +126,7 @@ export default function PaymentPage() {
           seats: bookingInfo?.seats,
         };
 
+        clearTimer();
         localStorage.setItem("pendingOrder", JSON.stringify(orderData));
         window.location.href = result.paymentUrl;
       } catch (err) {
@@ -172,6 +150,7 @@ export default function PaymentPage() {
         discountAmount: discountInfo.amount,
         paymentMethod: "MOMO",
       };
+      clearTimer();
       localStorage.setItem("pendingOrder", JSON.stringify(pendingOrder));
       clearBookingState();
       router.push(`/payment-success/momo`);
@@ -189,16 +168,8 @@ export default function PaymentPage() {
   }, {});
 
   return (
-    <div className="min-h-screen pt-20 px-4 sm:px-6 lg:px-8 pb-12 bg-background">
+    <div className="min-h-screen pt-6 sm:pt-8 px-4 sm:px-6 lg:px-8 pb-12 bg-background">
       <div className="max-w-6xl mx-auto">
-        <button
-          onClick={() => router.back()}
-          className="mt-5 flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 cursor-pointer transition-colors group"
-        >
-          <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
-          Quay lại
-        </button>
-
         <form onSubmit={handleSubmit} className="grid lg:grid-cols-3 gap-8">
           {/* Payment Methods */}
           <div className="lg:col-span-2 space-y-6">
@@ -250,7 +221,7 @@ export default function PaymentPage() {
 
           {/* Order Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-card border border-border rounded-2xl p-5 sticky top-24 shadow-xl shadow-black/10">
+            <div className="bg-card border border-border rounded-2xl p-5 sticky top-20 shadow-xl shadow-black/10">
               {/* Movie poster + info */}
               <div className="flex mb-5 gap-3">
                 {bookingInfo?.moviePoster && (
@@ -313,9 +284,9 @@ export default function PaymentPage() {
               </div>
 
               {/* Countdown */}
-              <div className="mb-5 py-3 px-4 bg-primary/8 rounded-xl border border-primary/20 text-center">
+              <div className={`mb-5 py-3 px-4 rounded-xl border text-center ${isUrgent ? "bg-destructive/10 border-destructive/30" : "bg-primary/8 border-primary/20"}`}>
                 <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Thời gian còn lại</p>
-                <div className={`text-2xl font-black font-mono ${timeLeft <= 60 ? "text-red-500 animate-pulse" : "text-primary"}`}>
+                <div className={`text-2xl font-black font-mono ${isUrgent ? "text-destructive animate-pulse" : "text-primary"}`}>
                   {minutes}:{seconds}
                 </div>
               </div>

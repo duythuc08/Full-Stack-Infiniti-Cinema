@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getBookingState, mergeBookingState } from "@/utils/bookingStorage";
 import { fetchFoods } from "@/libs/service/booking.service";
+import { useBookingTimer } from "@/hooks/use-booking-timer";
 import type { FoodProduct, FoodDetail } from "@/types";
 
 export default function FoodSelectionPage() {
@@ -16,31 +17,10 @@ export default function FoodSelectionPage() {
   const [cart, setCart] = useState<Record<number, number>>({});
   const [products, setProducts] = useState<FoodProduct[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
-  const [timeLeft, setTimeLeft] = useState(300);
+
+  const { minutes, seconds, progress, isUrgent } = useBookingTimer();
 
   const bookingInfo = getBookingState();
-  const minutes = String(Math.floor(timeLeft / 60)).padStart(2, "0");
-  const seconds = String(timeLeft % 60).padStart(2, "0");
-
-  // Countdown – dùng [] để tránh restart interval khi router reference thay đổi
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          toast.error("Hết thời gian giữ ghế! Vui lòng đặt vé lại.", { duration: 5000 });
-          router.push("/");
-          return 0;
-        }
-        if (prev === 60) {
-          toast.warning("Còn 1 phút để hoàn tất đặt vé!", { duration: 3000 });
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Fetch foods
   useEffect(() => {
@@ -117,7 +97,7 @@ export default function FoodSelectionPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground pt-24 pb-8 px-4">
+    <div className="min-h-screen bg-background text-foreground pt-6 sm:pt-8 pb-8 px-4">
       <div className="max-w-5xl lg:max-w-[1200px] mx-auto grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
 
         {/* Left: Products */}
@@ -184,19 +164,19 @@ export default function FoodSelectionPage() {
 
         {/* Right: Order Summary */}
         <div>
-          <div className="sticky top-8">
+          <div className="sticky top-20">
             {/* Countdown timer */}
             <div className="mb-4 bg-card/80 backdrop-blur-sm border border-border rounded-2xl p-4">
               <div className="text-center">
                 <p className="text-xs text-muted-foreground mb-1 uppercase tracking-widest">Thời gian giữ ghế</p>
-                <div className={`text-3xl font-black font-mono ${timeLeft <= 60 ? "text-red-500 animate-pulse" : "text-primary"}`}>
+                <div className={`text-3xl font-black font-mono ${isUrgent ? "text-destructive animate-pulse" : "text-primary"}`}>
                   {minutes}:{seconds}
                 </div>
               </div>
               <div className="mt-3 w-full h-1.5 bg-muted rounded-full overflow-hidden">
                 <div
-                  className={`h-full transition-[width] duration-300 rounded-full ${timeLeft <= 60 ? "bg-red-500" : "bg-primary"}`}
-                  style={{ width: `${(timeLeft / 300) * 100}%` }}
+                  className={`h-full transition-[width] duration-300 rounded-full ${isUrgent ? "bg-destructive" : "bg-primary"}`}
+                  style={{ width: `${progress}%` }}
                 />
               </div>
             </div>

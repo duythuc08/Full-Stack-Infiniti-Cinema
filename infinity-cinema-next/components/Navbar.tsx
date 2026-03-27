@@ -123,7 +123,9 @@ export function Navbar() {
 
   const isActive = (path: string) => pathname === path;
 
+  const BOOKING_PREFIXES = ["/seat-selection/", "/food-selection/", "/payment/", "/payment-success/", "/payment-fail/"];
   if (pathname === "/login" || pathname === "/signup") return null;
+  if (BOOKING_PREFIXES.some((p) => pathname.startsWith(p))) return null;
 
   return (
     <nav
