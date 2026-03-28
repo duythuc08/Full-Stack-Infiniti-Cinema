@@ -55,46 +55,33 @@ export function MovieCarousel({
         <div className="flex items-center gap-3">
           <div className="w-1 h-6 bg-primary rounded-full shrink-0" />
           <h2 className="text-xl sm:text-2xl font-bold text-foreground">{title}</h2>
-          {totalPages > 1 && (
-            <span className="hidden sm:inline text-xs text-muted-foreground font-medium bg-muted px-2 py-0.5 rounded-full">
-              Trang {currentPage + 1}/{totalPages}
-            </span>
-          )}
         </div>
 
-        {/* Prev/Next buttons (header-level, always visible) */}
         {totalPages > 1 && (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={prevPage}
-              disabled={!canPrev}
-              aria-label="Trang trước"
-              className="w-9 h-9 rounded-full border border-border bg-background
-                flex items-center justify-center
-                transition-all duration-200
-                hover:bg-muted hover:scale-105
-                disabled:opacity-30 disabled:cursor-not-allowed disabled:scale-100"
-            >
-              <ChevronLeft className="w-4 h-4 text-foreground" />
-            </button>
-            <button
-              onClick={nextPage}
-              disabled={!canNext}
-              aria-label="Trang tiếp"
-              className="w-9 h-9 rounded-full border border-border bg-background
-                flex items-center justify-center
-                transition-all duration-200
-                hover:bg-muted hover:scale-105
-                disabled:opacity-30 disabled:cursor-not-allowed disabled:scale-100"
-            >
-              <ChevronRight className="w-4 h-4 text-foreground" />
-            </button>
-          </div>
+          <span className="hidden sm:inline text-xs text-muted-foreground font-medium bg-muted px-2 py-0.5 rounded-full">
+            Trang {currentPage + 1}/{totalPages}
+          </span>
         )}
       </div>
 
-      {/* ── Cards grid (4 cols lg, 2 cols mobile) ───────── */}
-      <div className="px-4 sm:px-6 lg:px-8">
+      {/* ── Cards grid with side Prev/Next buttons ────────── */}
+      <div className="flex items-center gap-1 sm:gap-2 px-1 sm:px-2 lg:px-4">
+        {/* Prev button */}
+        <button
+          onClick={prevPage}
+          disabled={!canPrev || totalPages <= 1}
+          aria-label="Trang trước"
+          className="shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-border bg-background
+            flex items-center justify-center
+            transition-all duration-200
+            hover:bg-muted hover:scale-105
+            disabled:opacity-20 disabled:cursor-not-allowed disabled:scale-100 cursor-pointer"
+        >
+          <ChevronLeft className="w-4 h-4 text-foreground" />
+        </button>
+
+        {/* Cards */}
+        <div className="flex-1">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           {loading
             ? Array.from({ length: 4 }).map((_, i) => (
@@ -108,6 +95,21 @@ export function MovieCarousel({
                 </div>
               ))}
         </div>
+        </div>
+
+        {/* Next button */}
+        <button
+          onClick={nextPage}
+          disabled={!canNext || totalPages <= 1}
+          aria-label="Trang tiếp"
+          className="shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-border bg-background
+            flex items-center justify-center
+            transition-all duration-200
+            hover:bg-muted hover:scale-105
+            disabled:opacity-20 disabled:cursor-not-allowed disabled:scale-100 cursor-pointer"
+        >
+          <ChevronRight className="w-4 h-4 text-foreground" />
+        </button>
       </div>
 
       {/* ── Dot indicators ──────────────────────────────── */}
